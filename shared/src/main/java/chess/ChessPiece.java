@@ -37,7 +37,6 @@ public class ChessPiece {
      */
     public ChessGame.TeamColor getTeamColor() {
         return pieceColor;
-//        throw new RuntimeException("Not implemented");
     }
 
     /**
