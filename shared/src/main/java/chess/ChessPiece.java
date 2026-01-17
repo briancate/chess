@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Collection;
+// Dr Jensen Code
+import java.util.List;
 
 /**
  * Represents a single chess piece
@@ -47,6 +49,8 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        // Dr Jensen Code
+        return List.of();
+//        throw new RuntimeException("Not implemented");
     }
 }
