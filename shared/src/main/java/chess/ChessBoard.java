@@ -9,9 +9,11 @@ package chess;
 public class ChessBoard {
 
     // Dr. Jensen code, verify that I know why this works
+    // I mean it's just a 2D array, nothing exciting there
     ChessPiece[][] squares = new ChessPiece[8][8];
     public ChessBoard() {
-        
+        // This doesn't take any parameters, is this where I need to implement the
+        // inital state of the board?
     }
 
     /**

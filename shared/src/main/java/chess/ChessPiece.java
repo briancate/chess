@@ -12,7 +12,12 @@ import java.util.List;
  */
 public class ChessPiece {
 
+    private final ChessGame.TeamColor pieceColor;
+    private final ChessPiece.PieceType type;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
 
     /**
@@ -31,14 +36,15 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return pieceColor;
+//        throw new RuntimeException("Not implemented");
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        return type;
     }
 
     /**
@@ -49,8 +55,11 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        // Dr Jensen Code
+        // Dr Jensen Code, I don't fully understand why he did this
         return List.of();
-//        throw new RuntimeException("Not implemented");
+        // you would need to access the type, then use the position to generate the moves
+        // they mentioned having different functions / subclasses for each piece?
+        // I don't know how to do that though
+        // And I don't really understand what the Enum is doing here
     }
 }
