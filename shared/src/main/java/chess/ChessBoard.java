@@ -46,6 +46,7 @@ public class ChessBoard {
     public void resetBoard() {
         // would this basically just run the constructor again?
         // to fully reset the board?
+
         throw new RuntimeException("Not implemented");
     }
 }
