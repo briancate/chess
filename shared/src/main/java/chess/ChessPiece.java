@@ -1,8 +1,6 @@
 package chess;
 
 import java.util.Collection;
-// Dr Jensen Code
-import java.util.List;
 
 /**
  * Represents a single chess piece
@@ -54,23 +52,7 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
-        if (piece.getPieceType() == PieceType.PAWN) {return pawnMoves(piece, board, myPosition);}
-        if (piece.getPieceType() == PieceType.BISHOP) {
-            return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8), null));
-        }
-        if (piece.getPieceType() == PieceType.ROOK) {return List.of();}
-        if (piece.getPieceType() == PieceType.KNIGHT) {return List.of();}
-        if (piece.getPieceType() == PieceType.QUEEN) {return List.of();}
-        if (piece.getPieceType() == PieceType.KING) {return List.of();}
-        return List.of();
-        // they mentioned having different functions for each piece?
-    }
-
-    private Collection<ChessMove> pawnMoves(ChessPiece piece, ChessBoard board, ChessPosition myPosition) {
-        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            return List.of(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn()), null));}
-        else {return List.of(new ChessMove(myPosition, new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()), null));}
-        // this currently ignores pawns being able to move twice from its initial position, diagonal captures, and promotion
+        throw new RuntimeException("Not implemented");
+//        return PieceMovesCalculator.generateMoves(board, myPosition);
     }
 }
