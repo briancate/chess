@@ -22,7 +22,6 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        // code by Dr Jensen
         squares[position.getRow()-1][position.getColumn()-1] = piece;
     }
 
@@ -48,3 +47,8 @@ public class ChessBoard {
         throw new RuntimeException("Not implemented");
     }
 }
+// OVERRIDE THE EQUALS AND HASHCODE FUNCTIONS
+
+// Overall questions to ask a TA: how do you want me to get the promotion type for a pawn?
+// The ChessBoard class doesn't take any parameters, what am I supposed to do there?
+// For the default, can I just copy over the TestUtilities code?
