@@ -70,6 +70,7 @@ public class PieceMovesCalculator {
 
         if (piece.getPieceType() == ChessPiece.PieceType.QUEEN) {return List.of();} */
 
+        if (piece.getPieceType() == ChessPiece.PieceType.ROOK) {return RookMovesCalculator();}
         if (piece.getPieceType() == ChessPiece.PieceType.BISHOP) {return BishopMovesCalculator();}
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {return KingMovesCalculator();}
         if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {return KnightMovesCalculator();}
@@ -112,6 +113,15 @@ public class PieceMovesCalculator {
         addMovesInALine(moves, -1, 1);
         addMovesInALine(moves, 1, -1);
         addMovesInALine(moves, 1, 1);
+        return moves;
+    }
+
+    private Collection<ChessMove> RookMovesCalculator() {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        addMovesInALine(moves, -1, 0);
+        addMovesInALine(moves, 0, -1);
+        addMovesInALine(moves, 0, 1);
+        addMovesInALine(moves, 1, 0);
         return moves;
     }
 
