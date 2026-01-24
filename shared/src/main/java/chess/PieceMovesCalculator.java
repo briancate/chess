@@ -37,11 +37,11 @@ public class PieceMovesCalculator {
         return !(isOccupied(position)) || !(isAlly(position));
     }
 
-    private ChessMove addPosition(int changeRow, int changeCol) {
-        ChessPosition newPosition = new ChessPosition(myPosition.getRow() + changeRow, myPosition.getColumn() + changeCol);
-        if (canMove(newPosition)) {return new ChessMove(myPosition, newPosition, null);}
-        return null;
-    }
+//    private ChessMove addPosition(int changeRow, int changeCol) {
+//        ChessPosition newPosition = new ChessPosition(myPosition.getRow() + changeRow, myPosition.getColumn() + changeCol);
+//        if (canMove(newPosition)) {return new ChessMove(myPosition, newPosition, null);}
+//        return null;
+//    }
 
     private void addMovesInALine(Collection<ChessMove> array, int changeRow, int changeCol) {
         for (int i = 1; i < 8; i++) {
