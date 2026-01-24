@@ -55,6 +55,10 @@ public class PieceMovesCalculator {
         }
     }
 
+    private boolean validatePawnDiagonalMoves(ChessPosition position) {
+        return !(isOutOfBounds(position)) && isOccupied(position) && !(isAlly(position));
+    }
+
     private void generatePawnPromotionMoves(Collection<ChessMove> array, ChessPosition position) {
         array.add(new ChessMove(myPosition, position, ChessPiece.PieceType.KNIGHT));
         array.add(new ChessMove(myPosition, position, ChessPiece.PieceType.BISHOP));
@@ -64,49 +68,65 @@ public class PieceMovesCalculator {
 
     public Collection<ChessMove> generateMoves() {
         ArrayList<ChessMove> moves = new ArrayList<>();
-        if (piece.getPieceType() == ChessPiece.PieceType.QUEEN) {QueenMovesCalculator(moves);}
-        if (piece.getPieceType() == ChessPiece.PieceType.ROOK) {RookMovesCalculator(moves);}
-        if (piece.getPieceType() == ChessPiece.PieceType.BISHOP) {BishopMovesCalculator(moves);}
-        if (piece.getPieceType() == ChessPiece.PieceType.KING) {KingMovesCalculator(moves);}
-        if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {KnightMovesCalculator(moves);}
+        if (piece.getPieceType() == ChessPiece.PieceType.QUEEN) {queenMovesCalculator(moves);}
+        if (piece.getPieceType() == ChessPiece.PieceType.ROOK) {rookMovesCalculator(moves);}
+        if (piece.getPieceType() == ChessPiece.PieceType.BISHOP) {bishopMovesCalculator(moves);}
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {kingMovesCalculator(moves);}
+        if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {knightMovesCalculator(moves);}
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {WhitePawnMovesGenerator(moves);}
-            if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {BlackPawnMovesGenerator(moves);}
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {whitePawnMovesGenerator(moves);}
+            if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {blackPawnMovesGenerator(moves);}
         }
         return moves;
     }
 
-    private void KingMovesCalculator(Collection<ChessMove> array) {
+    private void kingMovesCalculator(Collection<ChessMove> array) {
         int[][] possibleMoves = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0 , 1}, {1, -1}, {1, 0}, {1, 1}};
         generateMovesFromList(array, possibleMoves);
     }
 
-    private void KnightMovesCalculator(Collection<ChessMove> array) {
+    private void knightMovesCalculator(Collection<ChessMove> array) {
         int[][] possibleMoves = {{-2, -1},{-2, 1},{-1, -2},{-1, 2},{1, -2},{1, 2},{2, -1},{2, 1}};
         generateMovesFromList(array, possibleMoves);
     }
 
-    private void BishopMovesCalculator(Collection<ChessMove> array) {
+    private void bishopMovesCalculator(Collection<ChessMove> array) {
         addMovesInALine(array, -1, -1);
         addMovesInALine(array, -1, 1);
         addMovesInALine(array, 1, -1);
         addMovesInALine(array, 1, 1);
     }
 
-    private void RookMovesCalculator(Collection<ChessMove> array) {
+    private void rookMovesCalculator(Collection<ChessMove> array) {
         addMovesInALine(array, -1, 0);
         addMovesInALine(array, 0, -1);
         addMovesInALine(array, 0, 1);
         addMovesInALine(array, 1, 0);
     }
 
-    private void QueenMovesCalculator(Collection<ChessMove> array) {
+    private void queenMovesCalculator(Collection<ChessMove> array) {
         // add the moves a rook could make, then the moves a bishop could make
-        RookMovesCalculator(array);
-        BishopMovesCalculator(array);
+        rookMovesCalculator(array);
+        bishopMovesCalculator(array);
     }
 
-    private void WhitePawnMovesGenerator(Collection<ChessMove> array) {
+    private void pawnMovesGenerator(Collection<ChessMove> array, ChessPosition front, ChessPosition diagonalLeft,
+                                    ChessPosition diagonalRight, int promotionRow) {
+        if (myPosition.getRow() != promotionRow) {
+            if (!isOccupied(front)) {array.add(new ChessMove(myPosition, front, null));}
+            if (validatePawnDiagonalMoves(diagonalLeft)) {
+                array.add(new ChessMove(myPosition, diagonalLeft, null));}
+            if (validatePawnDiagonalMoves(diagonalRight)) {
+                array.add(new ChessMove(myPosition, diagonalRight, null));}
+        }
+        else {
+            if (!isOccupied(front)) {generatePawnPromotionMoves(array, front);}
+            if (validatePawnDiagonalMoves(diagonalLeft)) {generatePawnPromotionMoves(array, diagonalLeft);}
+            if (validatePawnDiagonalMoves(diagonalRight)) {generatePawnPromotionMoves(array, diagonalRight);}
+        }
+    }
+
+    private void whitePawnMovesGenerator(Collection<ChessMove> array) {
         ChessPosition front = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn());
         ChessPosition diagonalLeft = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1);
         ChessPosition diagonalRight = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1);
@@ -116,23 +136,10 @@ public class PieceMovesCalculator {
                 array.add(new ChessMove(myPosition, frontTwice, null));
             }
         }
-        if (myPosition.getRow() != 7) {
-            if (!isOccupied(front)) {array.add(new ChessMove(myPosition, front, null));}
-            if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {
-                array.add(new ChessMove(myPosition, diagonalLeft, null));}
-            if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {
-                array.add(new ChessMove(myPosition, diagonalRight, null));}
-        }
-        else {
-            if (!isOccupied(front)) {generatePawnPromotionMoves(array, front);}
-            if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {
-                generatePawnPromotionMoves(array, diagonalLeft);}
-            if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {
-                generatePawnPromotionMoves(array, diagonalRight);}
-        }
+        pawnMovesGenerator(array, front, diagonalLeft, diagonalRight, 7);
     }
 
-    private void BlackPawnMovesGenerator(Collection<ChessMove> array) {
+    private void blackPawnMovesGenerator(Collection<ChessMove> array) {
         ChessPosition front = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn());
         ChessPosition diagonalLeft = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1);
         ChessPosition diagonalRight = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1);
@@ -142,19 +149,6 @@ public class PieceMovesCalculator {
                 array.add(new ChessMove(myPosition, frontTwice, null));
             }
         }
-        if (myPosition.getRow() != 2) {
-            if (!isOccupied(front)) {array.add(new ChessMove(myPosition, front, null));}
-            if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {
-                array.add(new ChessMove(myPosition, diagonalLeft, null));}
-            if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {
-                array.add(new ChessMove(myPosition, diagonalRight, null));}
-        }
-        else {
-            if (!isOccupied(front)) {generatePawnPromotionMoves(array, front);}
-            if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {
-                generatePawnPromotionMoves(array, diagonalLeft);}
-            if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {
-                generatePawnPromotionMoves(array, diagonalRight);}
-        }
+        pawnMovesGenerator(array, front, diagonalLeft, diagonalRight, 2);
     }
 }
