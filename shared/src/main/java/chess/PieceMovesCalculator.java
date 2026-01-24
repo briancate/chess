@@ -60,20 +60,27 @@ public class PieceMovesCalculator {
 //        return array;
     }
 
+    private void generatePawnPromotionMoves(Collection<ChessMove> array, ChessPosition position) {
+        array.add(new ChessMove(myPosition, position, ChessPiece.PieceType.KNIGHT));
+        array.add(new ChessMove(myPosition, position, ChessPiece.PieceType.BISHOP));
+        array.add(new ChessMove(myPosition, position, ChessPiece.PieceType.ROOK));
+        array.add(new ChessMove(myPosition, position, ChessPiece.PieceType.QUEEN));
+    }
+
     public Collection<ChessMove> generateMoves() {
         // I was told to use ArrayLists for this, apparently they let you add things to the list
-        /* if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {return PawnMovesCalculator(piece, board, myPosition);}
-        if (piece.getPieceType() == ChessPiece.PieceType.BISHOP) {
-            return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8), null));
-        }
-        if (piece.getPieceType() == ChessPiece.PieceType.ROOK) {return List.of();}
 
-        if (piece.getPieceType() == ChessPiece.PieceType.QUEEN) {return List.of();} */
         if (piece.getPieceType() == ChessPiece.PieceType.QUEEN) {return QueenMovesCalculator();}
         if (piece.getPieceType() == ChessPiece.PieceType.ROOK) {return RookMovesCalculator();}
         if (piece.getPieceType() == ChessPiece.PieceType.BISHOP) {return BishopMovesCalculator();}
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {return KingMovesCalculator();}
         if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {return KnightMovesCalculator();}
+
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {return WhitePawnMovesGenerator();}
+            if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {return BlackPawnMovesGenerator();}
+        }
+
         // delete this later
         return null;
     }
@@ -138,13 +145,58 @@ public class PieceMovesCalculator {
         return moves;
     }
 
-//    private Collection<ChessMove> PawnMovesCalculator() {
-//        ArrayList<ChessMove> moves = new ArrayList<>();
-//        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-//            moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn()), null));
-//        }
-//        else {moves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()), null));}
-//        return moves;
-//    }
+    private Collection<ChessMove> WhitePawnMovesGenerator() {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+//        if (myPosition.getRow() == 8) {return moves;}
+
+        ChessPosition front = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn());
+        ChessPosition diagonalLeft = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1);
+        ChessPosition diagonalRight = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1);
+
+        if (myPosition.getRow() == 2) {
+            ChessPosition frontTwice = new ChessPosition(myPosition.getRow() + 2, myPosition.getColumn());
+            if (!isOccupied(front) && ! isOccupied(frontTwice)) {
+                moves.add(new ChessMove(myPosition, frontTwice, null));
+            }
+        }
+        if (myPosition.getRow() != 7) {
+            if (!isOccupied(front)) {moves.add(new ChessMove(myPosition, front, null));}
+            if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {moves.add(new ChessMove(myPosition, diagonalLeft, null));}
+            if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {moves.add(new ChessMove(myPosition, diagonalRight, null));}
+        }
+        else {
+            if (!isOccupied(front)) {generatePawnPromotionMoves(moves, front);}
+            if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {generatePawnPromotionMoves(moves, diagonalLeft);}
+            if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {generatePawnPromotionMoves(moves, diagonalRight);}
+        }
+        return moves;
+    }
+
+        private Collection<ChessMove> BlackPawnMovesGenerator() {
+            ArrayList<ChessMove> moves = new ArrayList<>();
+
+            // code to set up the 3 potential pawn moves
+            ChessPosition front = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn());
+            ChessPosition diagonalLeft = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1);
+            ChessPosition diagonalRight = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1);
+
+            if (myPosition.getRow() == 7) {
+                ChessPosition frontTwice = new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn());
+                if (!isOccupied(front) && ! isOccupied(frontTwice)) {
+                    moves.add(new ChessMove(myPosition, frontTwice, null));
+                }
+            }
+            if (myPosition.getRow() != 2) {
+                if (!isOccupied(front)) {moves.add(new ChessMove(myPosition, front, null));}
+                if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {moves.add(new ChessMove(myPosition, diagonalLeft, null));}
+                if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {moves.add(new ChessMove(myPosition, diagonalRight, null));}
+            }
+            else {
+                if (!isOccupied(front)) {generatePawnPromotionMoves(moves, front);}
+                if (!(isOutOfBounds(diagonalLeft)) && isOccupied(diagonalLeft) && !(isAlly(diagonalLeft))) {generatePawnPromotionMoves(moves, diagonalLeft);}
+                if (!(isOutOfBounds(diagonalRight)) && isOccupied(diagonalRight) && !(isAlly(diagonalRight))) {generatePawnPromotionMoves(moves, diagonalRight);}
+            }
+            return moves;
+    }
 }
 
