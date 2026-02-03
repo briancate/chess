@@ -51,8 +51,15 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        // this doesn't have to worry about who's turn it is
+        if (board.getPiece(startPosition) == null) {return null;}
+        Collection<ChessMove> potential_moves = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        // from here, loop through the moves, remove those that aren't valid (leave the King in check)
+        // cloning the board should happen here, right?
+        // and I'll need to implement makeMove for that to work
 
-        throw new RuntimeException("Not implemented");
+        return potential_moves;
+
     }
 
     /**
@@ -62,7 +69,12 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        // need to make the start position null (since the piece moved) and the new position the new piece
+        board.addPiece(move.getStartPosition(), null);
+        // that should automatically get rid of the enemy piece (if applicable), right?
+        if (move.getPromotionPiece() == null) {board.addPiece(move.getEndPosition(), piece);}
+        else {board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));}
     }
 
     /**
@@ -72,7 +84,8 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-
+        // I need to loop over every square on the board, find the valid moves of each piece,
+        // then return if a piece could capture the King
         throw new RuntimeException("Not implemented");
     }
 
