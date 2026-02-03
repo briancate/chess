@@ -72,13 +72,17 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = board.getPiece(move.getStartPosition());
-        // update kingLocation if you move the king, make this a function?
-
         // need to make the start position null (since the piece moved) and the new position the new piece
         board.addPiece(move.getStartPosition(), null);
         // that should automatically get rid of the enemy piece (if applicable), right?
         if (move.getPromotionPiece() == null) {board.addPiece(move.getEndPosition(), piece);}
         else {board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));}
+
+        // update kingLocation if you move the king, make this a function?
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (piece.getTeamColor() == TeamColor.WHITE) {whiteKingLocation = move.getEndPosition();}
+            else {blackKingLocation = move.getEndPosition();}
+        }
     }
 
     /**
