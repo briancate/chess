@@ -12,6 +12,8 @@ public class ChessGame {
 
     private ChessBoard board = new ChessBoard();
     private TeamColor teamTurn = TeamColor.WHITE;
+    private ChessPosition whiteKingLocation = new ChessPosition(1, 5);
+    private ChessPosition blackKingLocation = new ChessPosition(8, 5);
     // have some way of tracking moves for en passant?
 
     public ChessGame() {
@@ -70,6 +72,8 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = board.getPiece(move.getStartPosition());
+        // update kingLocation if you move the king, make this a function?
+
         // need to make the start position null (since the piece moved) and the new position the new piece
         board.addPiece(move.getStartPosition(), null);
         // that should automatically get rid of the enemy piece (if applicable), right?
@@ -85,8 +89,26 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         // I need to loop over every square on the board, find the valid moves of each piece,
-        // then return if a piece could capture the King
-        throw new RuntimeException("Not implemented");
+        // then return if a piece could capture the King, check if the given teamColor is in check
+        ChessPosition kingSquare = (teamColor == TeamColor.WHITE) ? whiteKingLocation : blackKingLocation;
+
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition square = new ChessPosition(i, j);
+                if (board.getPiece(square) != null) {
+                    ChessPiece piece = board.getPiece(square);
+                    if (piece.getTeamColor() != teamColor) {
+                        Collection<ChessMove> moves = piece.pieceMoves(board, square);
+                        for (ChessMove move : moves) {
+                            if (move.getEndPosition() == kingSquare) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -128,3 +150,6 @@ public class ChessGame {
         return board;
     }
 }
+
+// WRITE A FUNCTION THAT CAN ITERATE OVER THE BOARD
+// Or maybe just make a function that returns a list of each ChessPosition, that you can then use elsewhere
