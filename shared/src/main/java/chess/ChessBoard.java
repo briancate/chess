@@ -9,7 +9,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard implements Cloneable {
 
     ChessPiece[][] squares = new ChessPiece[8][8];
 
@@ -33,7 +33,6 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-
         return squares[position.getRow()-1][position.getColumn()-1];
     }
 
@@ -78,5 +77,26 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(squares);
+    }
+
+    @Override
+    public ChessBoard clone() {
+        try {
+            ChessBoard clone = (ChessBoard) super.clone();
+            // either iterate over the board and copy in pieces one at a time
+            // or copy the list somehow, but would that work?
+            for (int i = 1; i < 9; i++) {
+                for (int j = 1; j < 9; j++) {
+                    ChessPosition square = new ChessPosition(i, j);
+                    if (getPiece(square) != null) {
+                        ChessPiece piece = getPiece(square);
+                        clone.addPiece(square, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                    }
+                }
+            }
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
