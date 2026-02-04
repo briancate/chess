@@ -41,6 +41,7 @@ public class ChessBoard implements Cloneable {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
+        squares = new ChessPiece[8][8];
         addPiece(new ChessPosition(1,1),  new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
         addPiece(new ChessPosition(1,2),  new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
         addPiece(new ChessPosition(1,3),  new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
@@ -83,15 +84,15 @@ public class ChessBoard implements Cloneable {
     public ChessBoard clone() {
         try {
             ChessBoard clone = (ChessBoard) super.clone();
-            // either iterate over the board and copy in pieces one at a time
-            // or copy the list somehow, but would that work?
+            clone.resetBoard();
             for (int i = 1; i < 9; i++) {
                 for (int j = 1; j < 9; j++) {
                     ChessPosition square = new ChessPosition(i, j);
-                    if (getPiece(square) != null) {
-                        ChessPiece piece = getPiece(square);
+                    ChessPiece piece = getPiece(square);
+                    if (piece != null) {
                         clone.addPiece(square, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
                     }
+                    else {clone.addPiece(square, null);}
                 }
             }
             return clone;

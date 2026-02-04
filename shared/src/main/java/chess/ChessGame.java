@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -59,18 +60,24 @@ public class ChessGame {
         if (board.getPiece(startPosition) == null) {return null;}
         Collection<ChessMove> potentialMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
         // from here, loop through the moves, remove those that aren't valid (leave the King in check)
-        ChessBoard clone = board.clone(); // use this to save the current board
+        ChessBoard initialBoard = board.clone(); // use this to save the current board
+        TeamColor initialTeamTurn = teamTurn;
+
+        Collection<ChessMove> verifiedMoves = new ArrayList<>();
         for (ChessMove move : potentialMoves) {
             try {
                 makeMove(move);
+                verifiedMoves.add(move);
             } catch (InvalidMoveException e) {
-                potentialMoves.remove(move);
+                // potentialMoves.remove(move);
+//                System.out.println(e);
             } finally {
                 // restore the board after each move, valid or not
-                this.board = clone;
+                this.board = initialBoard.clone();
+                setTeamTurn(initialTeamTurn);
             }
         }
-        return potentialMoves;
+        return verifiedMoves;
     }
 
     /**
@@ -95,14 +102,14 @@ public class ChessGame {
         if (move.getPromotionPiece() == null) {board.addPiece(move.getEndPosition(), piece);}
         else {board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));}
 
-        // throw an exception here if the move results in check?
-        if (isInCheck(teamTurn)) {throw new InvalidMoveException("You cannot make a move that leaves your king in check");}
-
         // update kingLocation if you move the king, make this a function?
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             if (piece.getTeamColor() == TeamColor.WHITE) {whiteKingLocation = move.getEndPosition();}
             else {blackKingLocation = move.getEndPosition();}
         }
+
+        // throw an exception here if the move results in check?
+        if (isInCheck(teamTurn)) {throw new InvalidMoveException("You cannot make a move that leaves your king in check");}
 
         // update whose turn it is
         // teamTurn = ((teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE);
@@ -212,3 +219,7 @@ public class ChessGame {
 
 // WRITE A FUNCTION THAT CAN ITERATE OVER THE BOARD
 // Or maybe just make a function that returns a list of each ChessPosition, that you can then use elsewhere
+
+// How on Earth can I use validMoves to get moves regardless of turn if I need makeMove to not allow moves if it's not your turn?
+// I guess that means I can't actually use the makeMove function to see if it's valid
+// So I guess I make other methods that check everything except if it's your turn?
