@@ -56,29 +56,23 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        // this doesn't have to worry about who's turn it is
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {return null;}
         Collection<ChessMove> potentialMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
-        // from here, loop through the moves, remove those that aren't valid (leave the King in check)
-        ChessBoard initialBoard = board.clone(); // use this to save the current board
+        ChessBoard initialBoard = board.clone();
         TeamColor initialTeamTurn = teamTurn;
 
         Collection<ChessMove> verifiedMoves = new ArrayList<>();
         for (ChessMove move : potentialMoves) {
             try {
-                // set teamTurn to the piece's color, because validMoves should work regardless of turn
                 setTeamTurn(piece.getTeamColor());
                 makeMove(move);
-                // if the code reached here, the move is valid
                 verifiedMoves.add(move);
             } catch (InvalidMoveException e) {
                 continue;
             } finally {
-                // restore the board after each move, valid or not
                 this.board = initialBoard.clone();
                 setTeamTurn(initialTeamTurn);
-                // if you moved the king, reset it
                 if (piece.getPieceType() == ChessPiece.PieceType.KING) {updateKingPositions();}
             }
         }
@@ -93,33 +87,22 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = board.getPiece(move.getStartPosition());
-        // throw an error if it's not your turn or if there's no piece at the starting position
         if (piece == null) {throw new InvalidMoveException("There is no piece at the specified position");}
         if (piece.getTeamColor() != teamTurn) {throw new InvalidMoveException("It is not your turn lol");}
-        // rule out invalid moves first
+
         Collection<ChessMove> legalMoves = piece.pieceMoves(board, move.getStartPosition());
-        // Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
         if (!legalMoves.contains(move)) {throw new InvalidMoveException("Your piece cannot move to that square");}
 
-        // need to make the start position null (since the piece moved) and the new position the new piece
         board.addPiece(move.getStartPosition(), null);
-        // that should automatically get rid of the enemy piece (if applicable), right?
         if (move.getPromotionPiece() == null) {board.addPiece(move.getEndPosition(), piece);}
         else {board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));}
 
-        // update kingLocation if you move the king, make this a function?
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             if (piece.getTeamColor() == TeamColor.WHITE) {whiteKingLocation = move.getEndPosition();}
             else {blackKingLocation = move.getEndPosition();}
         }
-
-        // throw an exception here if the move results in check?
         if (isInCheck(teamTurn)) {throw new InvalidMoveException("You cannot make a move that leaves your king in check");}
-
-        // update whose turn it is
-        // teamTurn = ((teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE);
-        if (teamTurn == TeamColor.WHITE) {setTeamTurn(TeamColor.BLACK);}
-        else {setTeamTurn(TeamColor.WHITE);}
+        switchTeamTurn();
     }
 
     /**
@@ -129,19 +112,11 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        // I need to loop over every square on the board, find the moves of each enemy piece,
-        // then return if a piece could capture the King, check if the given teamColor is in check
         ChessPosition kingSquare = ((teamColor == TeamColor.WHITE) ? whiteKingLocation : blackKingLocation);
-
         for (ChessPosition position : ChessBoard.allPositions) {
             ChessPiece piece = board.getPiece(position);
             if (piece != null && piece.getTeamColor() != teamColor) {
-                Collection<ChessMove> moves = piece.pieceMoves(board, position);
-                for (ChessMove move : moves) {
-                    if (move.getEndPosition().equals(kingSquare)) {
-                        return true;
-                    }
-                }
+                if (couldCaptureKing(piece, position, kingSquare)) {return true;}
             }
         }
         return false;
@@ -154,7 +129,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (!isInCheck(teamColor)) {return false;}
+        return hasNoValidMoves(teamColor);
     }
 
     /**
@@ -165,7 +141,8 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)) {return false;}
+        return hasNoValidMoves(teamColor);
     }
 
     /**
@@ -188,6 +165,16 @@ public class ChessGame {
     }
 
 
+    private boolean hasNoValidMoves(TeamColor teamColor) {
+        for (ChessPosition position : ChessBoard.allPositions) {
+            ChessPiece piece = board.getPiece(position);
+            if (piece != null && piece.getTeamColor() == teamColor) {
+                if (!validMoves(position).isEmpty()) {return false;}
+            }
+        }
+        return true;
+    }
+
     private void updateKingPositions() {
         for (ChessPosition position : ChessBoard.allPositions) {
             ChessPiece piece = board.getPiece(position);
@@ -196,6 +183,21 @@ public class ChessGame {
                 else {blackKingLocation = position;}
             }
         }
+    }
+
+    private boolean couldCaptureKing(ChessPiece piece, ChessPosition piecePosition, ChessPosition kingSquare) {
+        Collection<ChessMove> moves = piece.pieceMoves(board, piecePosition);
+        for (ChessMove move : moves) {
+            if (move.getEndPosition().equals(kingSquare)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void switchTeamTurn() {
+        if (teamTurn == TeamColor.WHITE) {setTeamTurn(TeamColor.BLACK);}
+        else {setTeamTurn(TeamColor.WHITE);}
     }
 
     @Override
@@ -215,9 +217,5 @@ public class ChessGame {
 
 // WRITE A FUNCTION THAT CAN ITERATE OVER THE BOARD
 // Or maybe just make a function that returns a list of each ChessPosition, that you can then use elsewhere
-
-// How on Earth can I use validMoves to get moves regardless of turn if I need makeMove to not allow moves if it's not your turn?
-// I guess that means I can't actually use the makeMove function to see if it's valid
-// So I guess I make other methods that check everything except if it's your turn?
 
 // Make allPositions a static variable for ChessBoard?
