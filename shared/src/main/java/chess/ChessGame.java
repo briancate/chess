@@ -57,7 +57,8 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         // this doesn't have to worry about who's turn it is
-        if (board.getPiece(startPosition) == null) {return null;}
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {return null;}
         Collection<ChessMove> potentialMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
         // from here, loop through the moves, remove those that aren't valid (leave the King in check)
         ChessBoard initialBoard = board.clone(); // use this to save the current board
@@ -66,15 +67,19 @@ public class ChessGame {
         Collection<ChessMove> verifiedMoves = new ArrayList<>();
         for (ChessMove move : potentialMoves) {
             try {
+                // set teamTurn to the piece's color, because validMoves should work regardless of turn
+                setTeamTurn(piece.getTeamColor());
                 makeMove(move);
+                // if the code reached here, the move is valid
                 verifiedMoves.add(move);
             } catch (InvalidMoveException e) {
-                // potentialMoves.remove(move);
-//                System.out.println(e);
+                continue;
             } finally {
                 // restore the board after each move, valid or not
                 this.board = initialBoard.clone();
                 setTeamTurn(initialTeamTurn);
+                // if you moved the king, reset it
+                if (piece.getPieceType() == ChessPiece.PieceType.KING) {updateKingPositions();}
             }
         }
         return verifiedMoves;
@@ -128,20 +133,13 @@ public class ChessGame {
         // then return if a piece could capture the King, check if the given teamColor is in check
         ChessPosition kingSquare = ((teamColor == TeamColor.WHITE) ? whiteKingLocation : blackKingLocation);
 
-        for (int i = 1; i < 9; i++) {
-            for (int j = 1; j < 9; j++) {
-                ChessPosition square = new ChessPosition(i, j);
-                ChessPiece piece = board.getPiece(square);
-                if (piece != null) {
-                    if (piece.getTeamColor() != teamColor) {
-                        Collection<ChessMove> moves = piece.pieceMoves(board, square);
-                        for (ChessMove move : moves) {
-                            // if (move.getEndPosition().getRow() == kingSquare.getRow() && move.getEndPosition().getColumn() == kingSquare.getColumn()) {
-                            // if (move.getEndPosition() == kingSquare) {
-                            if (move.getEndPosition().equals(kingSquare)) {
-                                return true;
-                            }
-                        }
+        for (ChessPosition position : ChessBoard.allPositions) {
+            ChessPiece piece = board.getPiece(position);
+            if (piece != null && piece.getTeamColor() != teamColor) {
+                Collection<ChessMove> moves = piece.pieceMoves(board, position);
+                for (ChessMove move : moves) {
+                    if (move.getEndPosition().equals(kingSquare)) {
+                        return true;
                     }
                 }
             }
@@ -177,19 +175,7 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.board = board;
-        // dang I would need to update king positions...
-        for (int i = 1; i < 9; i++) {
-            for (int j = 1; j < 9; j++) {
-                ChessPosition square = new ChessPosition(i, j);
-                ChessPiece piece = board.getPiece(square);
-                if (piece != null) {
-                    if (piece.getPieceType() == ChessPiece.PieceType.KING) {
-                        if (piece.getTeamColor() == TeamColor.WHITE) {whiteKingLocation = square;}
-                        else {blackKingLocation = square;}
-                    }
-                }
-            }
-        }
+        updateKingPositions();
     }
 
     /**
@@ -201,6 +187,16 @@ public class ChessGame {
         return board;
     }
 
+
+    private void updateKingPositions() {
+        for (ChessPosition position : ChessBoard.allPositions) {
+            ChessPiece piece = board.getPiece(position);
+            if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
+                if (piece.getTeamColor() == TeamColor.WHITE) {whiteKingLocation = position;}
+                else {blackKingLocation = position;}
+            }
+        }
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -223,3 +219,5 @@ public class ChessGame {
 // How on Earth can I use validMoves to get moves regardless of turn if I need makeMove to not allow moves if it's not your turn?
 // I guess that means I can't actually use the makeMove function to see if it's valid
 // So I guess I make other methods that check everything except if it's your turn?
+
+// Make allPositions a static variable for ChessBoard?

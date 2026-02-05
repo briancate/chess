@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -10,6 +12,19 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessBoard implements Cloneable {
+
+
+    public static final Collection<ChessPosition> allPositions = allPositionsOnTheBoard();
+
+    private static Collection<ChessPosition> allPositionsOnTheBoard() {
+        Collection<ChessPosition> positions = new ArrayList<>();
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                positions.add(new ChessPosition(i, j));
+            }
+        }
+        return positions;
+    }
 
     ChessPiece[][] squares = new ChessPiece[8][8];
 
