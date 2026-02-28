@@ -17,7 +17,7 @@ public class PieceMovesCalculator {
     private boolean isAlly(ChessPosition position) {
         // returns true if an allied piece is at the position, assumes the position is occupied (doesn't check for null)
         return board.getPiece(position).getTeamColor() == piece.getTeamColor();
-    }
+    }   
 
     private boolean isOccupied(ChessPosition position) {
         // returns true if a piece is at the position, false otherwise

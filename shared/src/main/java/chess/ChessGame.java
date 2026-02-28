@@ -18,6 +18,9 @@ public class ChessGame {
     private ChessPosition blackKingLocation = new ChessPosition(8, 5);
     // have some way of tracking moves for en passant?
     // and hold on to some boolean that says if the king or rooks have moved (for castling)?
+    // private boolean canCastleKingside = true;
+    // private boolean canCastleQueenside = true;
+
 
     public ChessGame() {
         // I need to initialize the board somewhere, does this work?
@@ -58,7 +61,7 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {return null;}
-        Collection<ChessMove> potentialMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
         ChessBoard initialBoard = board.clone();
         TeamColor initialTeamTurn = teamTurn;
 
@@ -88,7 +91,7 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = board.getPiece(move.getStartPosition());
         if (piece == null) {throw new InvalidMoveException("There is no piece at the specified position");}
-        if (piece.getTeamColor() != teamTurn) {throw new InvalidMoveException("It is not your turn lol");}
+        if (piece.getTeamColor() != teamTurn) {throw new InvalidMoveException("You can't move when it is not your turn");}
 
         Collection<ChessMove> legalMoves = piece.pieceMoves(board, move.getStartPosition());
         if (!legalMoves.contains(move)) {throw new InvalidMoveException("Your piece cannot move to that square");}
@@ -97,10 +100,7 @@ public class ChessGame {
         if (move.getPromotionPiece() == null) {board.addPiece(move.getEndPosition(), piece);}
         else {board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));}
 
-        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
-            if (piece.getTeamColor() == TeamColor.WHITE) {whiteKingLocation = move.getEndPosition();}
-            else {blackKingLocation = move.getEndPosition();}
-        }
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {updateKingPositions();}
         if (isInCheck(teamTurn)) {throw new InvalidMoveException("You cannot make a move that leaves your king in check");}
         switchTeamTurn();
     }
@@ -164,7 +164,6 @@ public class ChessGame {
         return board;
     }
 
-
     private boolean hasNoValidMoves(TeamColor teamColor) {
         for (ChessPosition position : ChessBoard.allPositions) {
             ChessPiece piece = board.getPiece(position);
@@ -214,8 +213,3 @@ public class ChessGame {
         return Objects.hash(board, teamTurn);
     }
 }
-
-// WRITE A FUNCTION THAT CAN ITERATE OVER THE BOARD
-// Or maybe just make a function that returns a list of each ChessPosition, that you can then use elsewhere
-
-// Make allPositions a static variable for ChessBoard?
