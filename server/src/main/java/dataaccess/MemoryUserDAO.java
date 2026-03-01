@@ -19,6 +19,15 @@ public class MemoryUserDAO implements UserDAO {
         throw new DataAccessException("Error: already taken");
     }
 
+//    public void login(String username, String password) throws DataAccessException {
+//        for (UserData user : userList) {
+//            if (user.username().equals(username) && user.password().equals(password)) {
+//                return;
+//            }
+//        }
+//        throw new DataAccessException("Error: unauthorised");
+//    }
+
     public UserData getUser(String username) throws DataAccessException {
         for (UserData user : userList) {
             if (user.username().equals(username)) {return user;}

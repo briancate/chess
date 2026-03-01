@@ -16,6 +16,12 @@ public class UserService {
 //        return ;
     }
 
+    public UserData getUser(String username) throws DataAccessException {
+        return userDAO.getUser(username);
+    }
+
+
+
 
     //    public RegisterResult register(RegisterRequest registerRequest) {}
     //    public LoginResult login(LoginRequest loginRequest) {}
