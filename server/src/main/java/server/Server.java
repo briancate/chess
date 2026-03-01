@@ -7,11 +7,7 @@ import handlers.AuthHandler;
 import handlers.UserHandler;
 import io.javalin.*;
 import io.javalin.http.Context;
-import com.google.gson.Gson;
-import model.AuthData;
-import model.UserData;
-import service.AuthService;
-import service.UserService;
+
 
 
 public class Server {
@@ -33,6 +29,7 @@ public class Server {
         // Register your endpoints and exception handlers here.
         .post("/user", userHandler::handleRegister)
         .post("/session", userHandler::handleLogin)
+        .delete("/session", userHandler::handleLogout)
         .exception(DataAccessException.class, this::exceptionHandler);
     }
 

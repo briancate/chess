@@ -10,7 +10,7 @@ import com.google.gson.Gson;
 import java.util.Map;
 
 
-public class UserHandler { // later do "extends Handler"
+public class UserHandler { // later do "extends Handler"?
 
     private final UserService userService;
     private final AuthHandler authHandler;
@@ -52,6 +52,19 @@ public class UserHandler { // later do "extends Handler"
             if (!initialData.password().equals(userData.password())) {throw new DataAccessException("Error: unauthorised");}
             AuthData authData = authHandler.createAuth(userData.username());
             ctx.result(new Gson().toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
+        }
+        catch (DataAccessException ex) {
+            ctx.status(401);
+            throw ex;
+        }
+    }
+
+    public void handleLogout(Context ctx) throws DataAccessException {
+        String authToken = ctx.header("authorization");
+        // get the AuthData from the authToken
+        try {
+            AuthData authData = authHandler.getAuth(authToken);
+            authHandler.deleteAuth(authToken);
         }
         catch (DataAccessException ex) {
             ctx.status(401);

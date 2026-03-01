@@ -3,7 +3,6 @@ package service;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.UserData;
-import service.AuthService;
 
 public class UserService {
 
@@ -13,7 +12,6 @@ public class UserService {
 
     public void register(UserData userData) throws DataAccessException {
         userDAO.createUser(userData);
-//        return ;
     }
 
     public UserData getUser(String username) throws DataAccessException {

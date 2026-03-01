@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import model.AuthData;
 
@@ -17,6 +18,14 @@ public class AuthService {
     public AuthService(AuthDAO authDAO) {this.authDAO = authDAO;}
 
     public void createAuth(AuthData auth) {authDAO.createAuth(auth);}
+
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        return authDAO.getAuth(authToken);
+    }
+
+    public void deleteAuth(String authToken) throws DataAccessException {
+        authDAO.deleteAuth(authToken);
+    }
 
     // add a method to verify an authToken
 

@@ -1,6 +1,7 @@
 package handlers;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import model.AuthData;
 import service.AuthService;
 
@@ -18,5 +19,12 @@ public class AuthHandler {
         return authData;
     }
 
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        return authService.getAuth(authToken);
+    }
+
+    public void deleteAuth(String authToken) throws DataAccessException {
+        authService.deleteAuth(authToken);
+    }
 
 }
