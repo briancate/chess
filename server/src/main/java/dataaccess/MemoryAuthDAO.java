@@ -14,7 +14,7 @@ public class MemoryAuthDAO implements AuthDAO {
         for (AuthData auth : authList) {
             if (auth.authToken().equals(authToken)) {return auth;}
         }
-        throw new DataAccessException("AuthData DNE");
+        throw new DataAccessException("Error: unauthorized");
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {
@@ -24,6 +24,6 @@ public class MemoryAuthDAO implements AuthDAO {
                 return;
             }
         }
-        throw new DataAccessException("AuthData cannot be deleted");
+        throw new DataAccessException("Error: bad request");
     }
 }

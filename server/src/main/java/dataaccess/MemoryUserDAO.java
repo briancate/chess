@@ -16,14 +16,14 @@ public class MemoryUserDAO implements UserDAO {
             userList.add(userData);
             return;
         }
-        throw new DataAccessException("Username already in database");
+        throw new DataAccessException("Error: already taken");
     }
 
     public UserData getUser(String username) throws DataAccessException {
         for (UserData user : userList) {
             if (user.username().equals(username)) {return user;}
         }
-        throw new DataAccessException("User DNE");
+        throw new DataAccessException("Error: bad request");
     }
 
     public void deleteUser(String username) throws DataAccessException {
@@ -33,7 +33,7 @@ public class MemoryUserDAO implements UserDAO {
                 return;
             }
         }
-        throw new DataAccessException("User DNE");
+        throw new DataAccessException("Error: bad request");
     }
 
 }

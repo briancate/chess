@@ -3,6 +3,7 @@ package server;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
+import handlers.UserHandler;
 import io.javalin.*;
 import io.javalin.http.Context;
 import com.google.gson.Gson;
@@ -17,12 +18,13 @@ public class Server {
     private final Javalin javalin;
 
     private final AuthService authService;
-    private final UserService userService;
+    private final UserHandler userHandler;
 
     public Server() {
         // if mode = memory ...
         this.authService = new AuthService(new MemoryAuthDAO());
-        this.userService = new UserService(new MemoryUserDAO());
+        this.userHandler = new UserHandler(new MemoryUserDAO());
+        // this.gameService = ...
         // else ... (SQL!)
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
@@ -34,7 +36,7 @@ public class Server {
 
     private void register(Context ctx) throws DataAccessException {
         UserData userData = new Gson().fromJson(ctx.body(), UserData.class);
-        this.userService.register(userData);
+        userHandler.handleRegister(userData);
         String authToken = AuthService.generateToken();
         AuthData authData = new AuthData(authToken, userData.username());
         this.authService.createAuth(authData);
