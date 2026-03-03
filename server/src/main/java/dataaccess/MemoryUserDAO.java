@@ -26,18 +26,7 @@ public class MemoryUserDAO implements UserDAO {
         throw new DataAccessException("Error: bad request");
     }
 
-    public void deleteUser(String username) throws DataAccessException {
-        for (UserData user : userList) {
-            if (user.username().equals(username)) {
-                userList.remove(user);
-                return;
-            }
-        }
-        throw new DataAccessException("Error: bad request");
-    }
-
     public void clear() {
         userList.clear();
     }
-
 }

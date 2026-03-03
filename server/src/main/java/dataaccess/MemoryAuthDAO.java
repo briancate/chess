@@ -10,9 +10,9 @@ public class MemoryAuthDAO implements AuthDAO {
 
     public void createAuth(AuthData auth) {authList.add(auth);}
 
-    public void getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws DataAccessException {
         for (AuthData auth : authList) {
-            if (auth.authToken().equals(authToken)) {return;}
+            if (auth.authToken().equals(authToken)) {return auth;}
         }
         throw new DataAccessException("Error: unauthorized");
     }

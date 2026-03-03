@@ -36,6 +36,7 @@ public class Server {
         .delete("/session", userHandler::handleLogout)
         .post("/game", gameHandler::handleCreate)
         .get("/game", gameHandler::listGames)
+        .put("/game", gameHandler::handleJoin)
         .delete("/db", this::clear)
         .exception(DataAccessException.class, this::exceptionHandler);
     }

@@ -21,16 +21,17 @@ public class AuthHandler {
         return authData;
     }
 
-    public void getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws DataAccessException {
         // do I ever actually need the authData? I don't think so
-        authService.getAuth(authToken);
+        return authService.getAuth(authToken);
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {
         authService.deleteAuth(authToken);
     }
 
-    public void validateAuth(Context ctx, String authToken) throws DataAccessException {
+    public void validateAuth(Context ctx) throws DataAccessException {
+        String authToken = ctx.header("authorization");
         try {
             getAuth(authToken);
         }

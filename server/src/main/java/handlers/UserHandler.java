@@ -63,7 +63,7 @@ public class UserHandler { // later do "extends Handler"?
 
     public void handleLogout(Context ctx) throws DataAccessException {
         String authToken = ctx.header("authorization");
-        authHandler.validateAuth(ctx, authToken);
+        authHandler.validateAuth(ctx);
         authHandler.deleteAuth(authToken);
     }
 

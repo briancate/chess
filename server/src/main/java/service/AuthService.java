@@ -18,8 +18,8 @@ public class AuthService {
 
     public void createAuth(AuthData auth) {authDAO.createAuth(auth);}
 
-    public void getAuth(String authToken) throws DataAccessException {
-        authDAO.getAuth(authToken);
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        return authDAO.getAuth(authToken);
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {

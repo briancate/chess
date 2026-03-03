@@ -6,7 +6,7 @@ public interface AuthDAO {
 
     void createAuth(AuthData auth);
 
-    void getAuth(String authToken) throws DataAccessException;
+    AuthData getAuth(String authToken) throws DataAccessException;
 
     void deleteAuth(String authToken) throws DataAccessException;  // use a username instead?
 
