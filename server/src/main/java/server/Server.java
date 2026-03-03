@@ -2,8 +2,10 @@ package server;
 
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import handlers.AuthHandler;
+import handlers.GameHandler;
 import handlers.UserHandler;
 import io.javalin.*;
 import io.javalin.http.Context;
@@ -16,11 +18,13 @@ public class Server {
 
     private final AuthHandler authHandler;
     private final UserHandler userHandler;
+    private final GameHandler gameHandler;
 
     public Server() {
         // if mode = memory ...
         this.authHandler = new AuthHandler(new MemoryAuthDAO());
         this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
+        this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
         // this.gameService = ...
         // else ... (SQL!)
 
@@ -30,19 +34,10 @@ public class Server {
         .post("/user", userHandler::handleRegister)
         .post("/session", userHandler::handleLogin)
         .delete("/session", userHandler::handleLogout)
+        .post("/game", gameHandler::handleCreate)
+        .get("/game", gameHandler::listGames)
         .exception(DataAccessException.class, this::exceptionHandler);
     }
-
-//    private void register(Context ctx) throws DataAccessException {
-//        UserData userData = userHandler.fromJsonToUserData(ctx);
-//        userHandler.handleRegister(userData);
-//        String authToken = AuthService.generateToken();
-//        AuthData authData = new AuthData(authToken, userData.username());
-//        this.authService.createAuth(authData);
-//        String registerResult = "{\"username\": \"" + userData.username() + "\", \"authToken\": \"" + authToken + "\"}";
-//
-//        ctx.result(registerResult);
-//    }
 
     public int run(int desiredPort) {
         javalin.start(desiredPort);

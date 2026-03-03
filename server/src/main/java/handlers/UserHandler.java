@@ -14,9 +14,10 @@ public class UserHandler { // later do "extends Handler"?
 
     private final UserService userService;
     private final AuthHandler authHandler;
+    private final Gson gson = new Gson();
 
     public UserData fromJsonToUserData(Context ctx) {
-        return new Gson().fromJson(ctx.body(), UserData.class);
+        return gson.fromJson(ctx.body(), UserData.class);
     }
 
     public UserHandler(UserDAO userDAO, AuthHandler authHandler) {
@@ -29,7 +30,7 @@ public class UserHandler { // later do "extends Handler"?
             UserData userData = fromJsonToUserData(ctx);
             userService.register(userData);
             AuthData authData = authHandler.createAuth(userData.username());
-            ctx.result(new Gson().toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
+            ctx.result(gson.toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
         }
         catch (DataAccessException ex) {
             ctx.status(403);
@@ -39,7 +40,7 @@ public class UserHandler { // later do "extends Handler"?
 
     public void handleLogin(Context ctx) throws DataAccessException {
         UserData userData;
-        UserData initialData = fromJsonToUserData(ctx);
+        UserData initialData = fromJsonToUserData(ctx); // this won't have an email field, so it should be left blank
         try {
             userData = userService.getUser(initialData.username());
         }
@@ -49,9 +50,10 @@ public class UserHandler { // later do "extends Handler"?
         }
         try {
             // remember to clean up the duplicate authData (either override or do something else)
+            // wait, how did it create a duplicate authData?
             if (!initialData.password().equals(userData.password())) {throw new DataAccessException("Error: unauthorised");}
             AuthData authData = authHandler.createAuth(userData.username());
-            ctx.result(new Gson().toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
+            ctx.result(gson.toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
         }
         catch (DataAccessException ex) {
             ctx.status(401);
@@ -63,7 +65,7 @@ public class UserHandler { // later do "extends Handler"?
         String authToken = ctx.header("authorization");
         // get the AuthData from the authToken
         try {
-            AuthData authData = authHandler.getAuth(authToken);
+            authHandler.getAuth(authToken);
             authHandler.deleteAuth(authToken);
         }
         catch (DataAccessException ex) {
