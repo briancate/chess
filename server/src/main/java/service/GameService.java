@@ -27,8 +27,8 @@ public class GameService {
 
     public void updateGame(JoinData joinData, String username) {
         switch (joinData.playerColor()) {
-            case "WHITE" : gameDAO.updateWhiteUsername(joinData, username);
-            case "BLACK" : gameDAO.updateBlackUsername(joinData, username);
+            case "WHITE" : gameDAO.updateWhiteUsername(joinData, username); break;
+            case "BLACK" : gameDAO.updateBlackUsername(joinData, username); break;
 
         }
 //        gameDAO.updateGame(joinData, username);

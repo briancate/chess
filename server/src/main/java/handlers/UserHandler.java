@@ -26,8 +26,16 @@ public class UserHandler { // later do "extends Handler"?
     }
 
     public void handleRegister(Context ctx) throws DataAccessException {
+        UserData userData = fromJsonToUserData(ctx);
         try {
-            UserData userData = fromJsonToUserData(ctx);
+            if (userData.username()==null || userData.password()==null) {throw new DataAccessException("Error: bad request");}
+        }
+        catch (DataAccessException ex) {
+            ctx.status(400);
+            throw ex;
+        }
+
+        try {
             userService.register(userData);
             AuthData authData = authHandler.createAuth(userData.username());
             ctx.result(gson.toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
@@ -41,8 +49,9 @@ public class UserHandler { // later do "extends Handler"?
     public void handleLogin(Context ctx) throws DataAccessException {
         UserData userData;
         UserData initialData = fromJsonToUserData(ctx); // this won't have an email field, so it should be left blank
+
         try {
-            userData = userService.getUser(initialData.username());
+            if (initialData.username()==null || initialData.password()==null) {throw new DataAccessException("Error: bad request");}
         }
         catch (DataAccessException ex) {
             ctx.status(400);
@@ -51,6 +60,7 @@ public class UserHandler { // later do "extends Handler"?
         try {
             // remember to clean up the duplicate authData (either override or do something else)
             // wait, how did it create a duplicate authData?
+            userData = userService.getUser(initialData.username());
             if (!initialData.password().equals(userData.password())) {throw new DataAccessException("Error: unauthorised");}
             AuthData authData = authHandler.createAuth(userData.username());
             ctx.result(gson.toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));

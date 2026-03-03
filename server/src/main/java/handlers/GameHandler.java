@@ -30,7 +30,7 @@ public class GameHandler {
     public void handleCreate(Context ctx) throws DataAccessException {
         authHandler.validateAuth(ctx);
         GameData gameData = gson.fromJson(ctx.body(), GameData.class); // create a GameData (most will be null)
-        if (gameData.gameName().isEmpty()) { // if they didn't provide a name, throw a 400 error
+        if (gameData.gameName()==null || gameData.gameName().isEmpty()) { // if they didn't provide a name, throw a 400 error
             ctx.status(400);
             throw new DataAccessException("Error: bad request");
         }
@@ -47,8 +47,10 @@ public class GameHandler {
         for (GameData game : oldGameList) {
             gameList.add(new JsonFriendlyGameData(
                     game.gameID(),
-                    game.whiteUsername()!=null ? game.whiteUsername() : "",
-                    game.blackUsername()!=null ? game.blackUsername() : "",
+//                    game.whiteUsername()!=null ? game.whiteUsername() : "",
+//                    game.blackUsername()!=null ? game.blackUsername() : "",
+                    game.whiteUsername(),
+                    game.blackUsername(),
                     game.gameName())
             );
         }
@@ -70,7 +72,8 @@ public class GameHandler {
             ctx.status(400);
             throw ex;
         }
-        if (!joinData.playerColor().equals("WHITE") && !joinData.playerColor().equals("BLACK")) {
+        if (joinData.playerColor()==null ||
+                (!joinData.playerColor().equals("WHITE") && !joinData.playerColor().equals("BLACK"))) {
             ctx.status(400);
             throw new DataAccessException("Error: bad request");
         }
@@ -85,7 +88,6 @@ public class GameHandler {
         }
         gameService.updateGame(joinData, username);
     }
-
     public void clear() {
         gameService.clear();
     }

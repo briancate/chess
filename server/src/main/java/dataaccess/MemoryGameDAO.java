@@ -10,7 +10,7 @@ import java.util.Collection;
 public class MemoryGameDAO implements GameDAO {
 
     ArrayList<GameData> gameList = new ArrayList<>();
-    private int gameIDCounter = 0;
+    private int gameIDCounter = 1;
 
     // no constructor needed here, since it doesn't need any parameters (and thus super() works)
 
