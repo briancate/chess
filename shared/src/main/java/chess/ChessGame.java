@@ -113,7 +113,7 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingSquare = ((teamColor == TeamColor.WHITE) ? whiteKingLocation : blackKingLocation);
-        for (ChessPosition position : ChessBoard.allPositions) {
+        for (ChessPosition position : ChessBoard.ALL_POSITIONS) {
             ChessPiece piece = board.getPiece(position);
             if (piece != null && piece.getTeamColor() != teamColor) {
                 if (couldCaptureKing(piece, position, kingSquare)) {return true;}
@@ -165,7 +165,7 @@ public class ChessGame {
     }
 
     private boolean hasNoValidMoves(TeamColor teamColor) {
-        for (ChessPosition position : ChessBoard.allPositions) {
+        for (ChessPosition position : ChessBoard.ALL_POSITIONS) {
             ChessPiece piece = board.getPiece(position);
             if (piece != null && piece.getTeamColor() == teamColor) {
                 if (!validMoves(position).isEmpty()) {return false;}
@@ -175,7 +175,7 @@ public class ChessGame {
     }
 
     private void updateKingPositions() {
-        for (ChessPosition position : ChessBoard.allPositions) {
+        for (ChessPosition position : ChessBoard.ALL_POSITIONS) {
             ChessPiece piece = board.getPiece(position);
             if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
                 if (piece.getTeamColor() == TeamColor.WHITE) {whiteKingLocation = position;}

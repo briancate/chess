@@ -14,7 +14,7 @@ import java.util.Objects;
 public class ChessBoard implements Cloneable {
 
 
-    public static final Collection<ChessPosition> allPositions = allPositionsOnTheBoard();
+    public static final Collection<ChessPosition> ALL_POSITIONS = allPositionsOnTheBoard();
 
     private static Collection<ChessPosition> allPositionsOnTheBoard() {
         Collection<ChessPosition> positions = new ArrayList<>();
