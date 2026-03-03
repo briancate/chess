@@ -30,6 +30,4 @@ public class AuthService {
         authDAO.clear();
     }
 
-    // add a method to verify an authToken
-
 }

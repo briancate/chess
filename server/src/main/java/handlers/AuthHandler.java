@@ -22,7 +22,6 @@ public class AuthHandler {
     }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
-        // do I ever actually need the authData? I don't think so
         return authService.getAuth(authToken);
     }
 

@@ -72,7 +72,7 @@ public class ChessGame {
                 makeMove(move);
                 verifiedMoves.add(move);
             } catch (InvalidMoveException e) {
-                continue;
+                // do nothing lol
             } finally {
                 this.board = initialBoard.clone();
                 setTeamTurn(initialTeamTurn);

@@ -1,0 +1,179 @@
+package service;
+
+import chess.ChessGame;
+import dataaccess.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import service.*;
+import model.*;
+
+import java.util.Collection;
+
+public class BrianTests {
+
+    @Test
+    void successfulRegister() throws DataAccessException {
+        UserService userService = new UserService(new MemoryUserDAO());
+        UserData userData = new UserData("brian", "abc123", "me@mail.com");
+        userService.register(userData);
+    }
+
+    @Test
+    void duplicateUserRegister() throws DataAccessException {
+        UserService userService = new UserService(new MemoryUserDAO());
+        UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
+        userService.register(userData1);
+        UserData userData2 = new UserData("brian", "newpw", "new@gmail.com");
+        Assertions.assertThrows(DataAccessException.class, () -> userService.register(userData2));
+    }
+
+    @Test
+    void successfulGetUser() throws DataAccessException {
+        UserService userService = new UserService(new MemoryUserDAO());
+        UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
+        userService.register(userData1);
+        userService.getUser("brian");
+    }
+
+    @Test
+    void unsuccessfulGetUser() throws DataAccessException {
+        UserService userService = new UserService(new MemoryUserDAO());
+        UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
+        userService.register(userData1);
+        Assertions.assertThrows(DataAccessException.class, () -> userService.getUser("notbrian"));
+    }
+
+    @Test
+    void clearUser() throws DataAccessException {
+        UserService userService = new UserService(new MemoryUserDAO());
+        UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
+        userService.register(userData1);
+        userService.clear();
+        Assertions.assertThrows(DataAccessException.class, () -> userService.getUser("brian"));
+    }
+
+    @Test
+    void generateToken() {
+        String token = AuthService.generateToken();
+        Assertions.assertNotEquals("", token);
+    }
+
+    @Test
+    void createAuth() {
+        AuthService authService = new AuthService(new MemoryAuthDAO());
+        AuthData authData = new AuthData(AuthService.generateToken(), "brian");
+        authService.createAuth(authData);
+    }
+
+    @Test
+    void successfulGetAuth() throws DataAccessException {
+        AuthService authService = new AuthService(new MemoryAuthDAO());
+        AuthData authData = new AuthData(AuthService.generateToken(), "brian");
+        authService.createAuth(authData);
+        authService.getAuth(authData.authToken());
+    }
+
+    @Test
+    void unsuccessfulGetAuth() throws DataAccessException {
+        AuthService authService = new AuthService(new MemoryAuthDAO());
+        AuthData authData = new AuthData(AuthService.generateToken(), "brian");
+        authService.createAuth(authData);
+        Assertions.assertThrows(DataAccessException.class, () -> authService.getAuth("not an authToken"));
+    }
+
+    @Test
+    void successfulDeleteAuth() throws DataAccessException {
+        AuthService authService = new AuthService(new MemoryAuthDAO());
+        AuthData authData = new AuthData(AuthService.generateToken(), "brian");
+        authService.createAuth(authData);
+        authService.deleteAuth(authData.authToken());
+    }
+
+    @Test
+    void unsuccessfulDeleteAuth() throws DataAccessException {
+        AuthService authService = new AuthService(new MemoryAuthDAO());
+        AuthData authData = new AuthData(AuthService.generateToken(), "brian");
+        authService.createAuth(authData);
+        Assertions.assertThrows(DataAccessException.class, () -> authService.deleteAuth("not an authToken"));
+    }
+
+    @Test
+    void clearAuth() {
+        AuthService authService = new AuthService(new MemoryAuthDAO());
+        AuthData authData = new AuthData(AuthService.generateToken(), "brian");
+        authService.createAuth(authData);
+        authService.clear();
+        Assertions.assertThrows(DataAccessException.class, () -> authService.deleteAuth(authData.authToken()));
+    }
+
+    @Test
+    void successfulCreateGame() {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        Assertions.assertEquals(1, gameID);
+    }
+
+    @Test
+    void successfulListGames() {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        Collection<GameData> list = gameService.listGames();
+        Assertions.assertEquals(1, list.size());
+    }
+
+    @Test
+    void successfulGetGame() throws DataAccessException {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        GameData retrievedData = gameService.getGame(gameID);
+        Assertions.assertEquals(gameData.gameName(), retrievedData.gameName());
+    }
+
+    @Test
+    void unsuccessfulGetGame() throws DataAccessException {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        Assertions.assertThrows(DataAccessException.class, () -> gameService.getGame(45));
+    }
+
+    @Test
+    void successfulUpdateGameWhite() throws DataAccessException {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        gameService.updateGame(new JoinData("WHITE", gameID), "brian");
+        GameData updatedGame = gameService.getGame(gameID);
+        Assertions.assertEquals("brian", updatedGame.whiteUsername());
+    }
+
+    @Test
+    void successfulUpdateGameBlack() throws DataAccessException {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        gameService.updateGame(new JoinData("BLACK", gameID), "brian");
+        GameData updatedGame = gameService.getGame(gameID);
+        Assertions.assertEquals("brian", updatedGame.blackUsername());
+    }
+
+    @Test
+    void unsuccessfulUpdateGame() throws DataAccessException {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        Assertions.assertThrows(DataAccessException.class, () -> gameService.updateGame(new JoinData("Salmon", gameID), "brian"));
+    }
+
+    @Test
+    void clearGame() {
+        GameService gameService = new GameService(new MemoryGameDAO());
+        GameData gameData = new GameData(0, null, null, "gamename", null);
+        int gameID = gameService.createGame(gameData);
+        gameService.clear();
+        Assertions.assertThrows(DataAccessException.class, () -> gameService.getGame(gameID));
+    }
+}

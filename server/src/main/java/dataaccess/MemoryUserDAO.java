@@ -16,6 +16,7 @@ public class MemoryUserDAO implements UserDAO {
             userList.add(userData);
             return;
         }
+        // you only reach here if the username is already taken
         throw new DataAccessException("Error: already taken");
     }
 

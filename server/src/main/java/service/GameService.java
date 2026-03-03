@@ -25,13 +25,12 @@ public class GameService {
         return gameDAO.getGame(gameID);
     }
 
-    public void updateGame(JoinData joinData, String username) {
+    public void updateGame(JoinData joinData, String username) throws DataAccessException {
         switch (joinData.playerColor()) {
             case "WHITE" : gameDAO.updateWhiteUsername(joinData, username); break;
             case "BLACK" : gameDAO.updateBlackUsername(joinData, username); break;
-
+            default : throw new DataAccessException("Error: bad request");
         }
-//        gameDAO.updateGame(joinData, username);
     }
 
     public void clear() {
