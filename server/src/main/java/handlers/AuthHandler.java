@@ -4,6 +4,8 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import service.AuthService;
+import io.javalin.http.Context;
+
 
 public class AuthHandler {
 
@@ -19,12 +21,23 @@ public class AuthHandler {
         return authData;
     }
 
-    public AuthData getAuth(String authToken) throws DataAccessException {
-        return authService.getAuth(authToken);
+    public void getAuth(String authToken) throws DataAccessException {
+        // do I ever actually need the authData? I don't think so
+        authService.getAuth(authToken);
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {
         authService.deleteAuth(authToken);
+    }
+
+    public void validateAuth(Context ctx, String authToken) throws DataAccessException {
+        try {
+            getAuth(authToken);
+        }
+        catch (DataAccessException ex) {
+            ctx.status(401);
+            throw ex;
+        }
     }
 
 }
