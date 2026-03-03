@@ -21,12 +21,10 @@ public class Server {
     private final GameHandler gameHandler;
 
     public Server() {
-        // if mode = memory ...
+        // add a way for this to swap between memory and SQL
         this.authHandler = new AuthHandler(new MemoryAuthDAO());
         this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
         this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
-        // this.gameService = ...
-        // else ... (SQL!)
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
 
@@ -51,8 +49,6 @@ public class Server {
     }
 
     private void exceptionHandler(DataAccessException ex, Context ctx) {
-//        ctx.status(ex.toHttpStatusCode());
-//        ctx.status(404);
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
@@ -60,6 +56,5 @@ public class Server {
         gameHandler.clear();
         authHandler.clear();
         userHandler.clear();
-        // worry about empty reponse body?
     }
 }

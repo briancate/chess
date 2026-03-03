@@ -27,11 +27,9 @@ public class MemoryGameDAO implements GameDAO {
         throw new DataAccessException("Error: bad request");
     }
 
-    public Collection<GameData> listGames() {return gameList;} // does this need to throw an error?
+    public Collection<GameData> listGames() {return gameList;}
 
     public void updateWhiteUsername(JoinData joinData, String username) {
-        // this will be more complicated since it has to deal with users joining the game
-        // and handling updates to the game via people making moves, idk how to do that
         for (GameData game : gameList) {
             if (game.gameID() == joinData.gameID()) {
                 GameData newGameData = new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game());
@@ -43,8 +41,6 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     public void updateBlackUsername(JoinData joinData, String username) {
-        // this will be more complicated since it has to deal with users joining the game
-        // and handling updates to the game via people making moves, idk how to do that
         for (GameData game : gameList) {
             if (game.gameID() == joinData.gameID()) {
                 GameData newGameData = new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game());

@@ -12,7 +12,7 @@ public class MemoryUserDAO implements UserDAO {
         try {
             getUser(userData.username());
         }
-        catch (DataAccessException e) { // find out why this doesn't work
+        catch (DataAccessException e) {
             userList.add(userData);
             return;
         }
