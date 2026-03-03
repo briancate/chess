@@ -19,4 +19,8 @@ public class GameService {
         return gameDAO.listGames();
     }
 
+    public void clear() {
+        gameDAO.clear();
+    }
+
 }

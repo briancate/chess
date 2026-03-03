@@ -18,6 +18,10 @@ public class UserService {
         return userDAO.getUser(username);
     }
 
+    public void clear() {
+        userDAO.clear();
+    }
+
 
 
 

@@ -36,6 +36,7 @@ public class Server {
         .delete("/session", userHandler::handleLogout)
         .post("/game", gameHandler::handleCreate)
         .get("/game", gameHandler::listGames)
+        .delete("/db", this::clear)
         .exception(DataAccessException.class, this::exceptionHandler);
     }
 
@@ -52,5 +53,12 @@ public class Server {
 //        ctx.status(ex.toHttpStatusCode());
 //        ctx.status(404);
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
+    }
+
+    private void clear(Context ctx) {
+        gameHandler.clear();
+        authHandler.clear();
+        userHandler.clear();
+        // worry about empty reponse body?
     }
 }

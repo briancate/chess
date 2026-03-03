@@ -26,6 +26,10 @@ public class AuthService {
         authDAO.deleteAuth(authToken);
     }
 
+    public void clear() {
+        authDAO.clear();
+    }
+
     // add a method to verify an authToken
 
 }

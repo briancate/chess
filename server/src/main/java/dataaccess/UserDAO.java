@@ -9,4 +9,6 @@ public interface UserDAO {
     public UserData getUser(String username) throws DataAccessException;
 
     public void deleteUser(String username) throws DataAccessException;
+
+    public void clear();
 }

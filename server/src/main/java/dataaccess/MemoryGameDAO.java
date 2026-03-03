@@ -31,4 +31,8 @@ public class MemoryGameDAO implements GameDAO {
         // this will be more complicated since it has to deal with users joining the game
         // and handling updates to the game via people making moves, idk how to do that
     }
+
+    public void clear() {
+        gameList.clear();
+    }
 }

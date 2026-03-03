@@ -66,4 +66,8 @@ public class UserHandler { // later do "extends Handler"?
         authHandler.validateAuth(ctx, authToken);
         authHandler.deleteAuth(authToken);
     }
+
+    public void clear() {
+        userService.clear();
+    }
 }

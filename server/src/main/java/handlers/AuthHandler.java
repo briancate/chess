@@ -40,4 +40,8 @@ public class AuthHandler {
         }
     }
 
+    public void clear() {
+        authService.clear();
+    }
+
 }

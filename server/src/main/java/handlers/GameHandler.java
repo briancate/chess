@@ -58,4 +58,8 @@ public class GameHandler {
         ctx.result(gson.toJson(Map.of("games", gameList))); //huh, how would I do this?
     }
 
+    public void clear() {
+        gameService.clear();
+    }
+
 }

@@ -36,4 +36,8 @@ public class MemoryUserDAO implements UserDAO {
         throw new DataAccessException("Error: bad request");
     }
 
+    public void clear() {
+        userList.clear();
+    }
+
 }
