@@ -1,10 +1,8 @@
 package service;
 
-import chess.ChessGame;
 import dataaccess.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import service.*;
 import model.*;
 
 import java.util.Collection;
@@ -74,7 +72,7 @@ public class BrianTests {
     }
 
     @Test
-    void unsuccessfulGetAuth() throws DataAccessException {
+    void unsuccessfulGetAuth() {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -90,7 +88,7 @@ public class BrianTests {
     }
 
     @Test
-    void unsuccessfulDeleteAuth() throws DataAccessException {
+    void unsuccessfulDeleteAuth() {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -118,7 +116,7 @@ public class BrianTests {
     void successfulListGames() {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
-        int gameID = gameService.createGame(gameData);
+        gameService.createGame(gameData);
         Collection<GameData> list = gameService.listGames();
         Assertions.assertEquals(1, list.size());
     }
@@ -133,10 +131,10 @@ public class BrianTests {
     }
 
     @Test
-    void unsuccessfulGetGame() throws DataAccessException {
+    void unsuccessfulGetGame() {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
-        int gameID = gameService.createGame(gameData);
+        gameService.createGame(gameData);
         Assertions.assertThrows(DataAccessException.class, () -> gameService.getGame(45));
     }
 
@@ -161,7 +159,7 @@ public class BrianTests {
     }
 
     @Test
-    void unsuccessfulUpdateGame() throws DataAccessException {
+    void unsuccessfulUpdateGame() {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         int gameID = gameService.createGame(gameData);
