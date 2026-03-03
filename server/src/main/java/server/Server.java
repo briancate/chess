@@ -49,6 +49,7 @@ public class Server {
     }
 
     private void exceptionHandler(DataAccessException ex, Context ctx) {
+        // I should find a way to throw a 500 error if nothing else is met
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
