@@ -7,7 +7,7 @@ import model.*;
 
 import java.util.Collection;
 
-public class BrianTests {
+public class BrianServiceTests {
 
     @Test
     void successfulRegister() throws DataAccessException {

@@ -26,6 +26,11 @@ public class Server {
         this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
         this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
 
+//        this.authHandler = new AuthHandler(new SQLAuthDAO());
+//        this.userHandler = new UserHandler(new SQLUserDAO(), authHandler);
+//        this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
+
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
 
         // Register your endpoints and exception handlers here.
