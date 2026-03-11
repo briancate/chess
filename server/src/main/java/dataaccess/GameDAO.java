@@ -17,6 +17,5 @@ public interface GameDAO {
 
     void updateBlackUsername(JoinData joinData, String username);
 
-
     void clear();
 }
