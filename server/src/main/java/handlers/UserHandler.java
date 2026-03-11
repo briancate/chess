@@ -58,7 +58,7 @@ public class UserHandler { // later do "extends Handler"?
             throw ex;
         }
         try {
-            // there could be a duplicate authData here (as it two authData objects with the same username if you don't logout
+            // there could be a duplicate authData here (as in two authData objects with the same username if you don't log out)
             userData = userService.getUser(initialData.username());
             if (!initialData.password().equals(userData.password())) {throw new DataAccessException("Error: unauthorised");}
             AuthData authData = authHandler.createAuth(userData.username());

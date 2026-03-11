@@ -66,14 +66,30 @@ public class Server {
 
     // add a configure database method
 
-    // include a "create statements" string to do so
-//    private final String[] createStatements = {
-//            """
-//            CREATE TABLE IF NOT EXISTS auths (all the info)
-//            CREATE TABLE IF NOT EXISTS users (all the info)
-//            CREATE TABLE IF NOT EXISTS games (all the info)
-//            """
-//    };
+    // should the `json` field be a TEXT type instead? Or maybe a JSON type?
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS auths (
+            `authtoken` varchar(50) NOT NULL,
+            `json` varchar(256) NOT NULL,
+            PRIMARY KEY (`authtoken`)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS users (
+            `username` varchar(50) NOT NULL,
+            `json` varchar(256) NOT NULL,
+            PRIMARY KEY (`username`)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS games (
+            `gameid` int NOT NULL AUTO_INCREMENT,
+            `json` varchar(256) NOT NULL,
+            PRIMARY KEY (`gameid`)
+            )
+            """
+    };
 
 //    private void configureDatabase() throws ResponseException {
 //        DatabaseManager.createDatabase();
