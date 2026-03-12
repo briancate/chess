@@ -10,5 +10,7 @@ public interface AuthDAO {
 
     void deleteAuth(String authToken) throws DataAccessException;  // use a username instead?
 
-    void clear();
+    void removeUserAuths(String username) throws DataAccessException;
+
+    void clear() throws DataAccessException;
 }

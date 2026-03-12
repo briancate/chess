@@ -25,12 +25,12 @@ public class Server {
             System.out.println("Failed to initialize the database, RIP");
         }
 
-//        this.authHandler = new AuthHandler(new SQLAuthDAO());
+        this.authHandler = new AuthHandler(new SQLAuthDAO());
         this.userHandler = new UserHandler(new SQLUserDAO(), authHandler);
 //        this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
 
         // add a way for this to swap between memory and SQL
-        this.authHandler = new AuthHandler(new MemoryAuthDAO());
+//        this.authHandler = new AuthHandler(new MemoryAuthDAO());
 //        this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
         this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
 
@@ -66,7 +66,7 @@ public class Server {
 
     private void clear(Context ctx) throws DataAccessException {
         gameHandler.clear();
-        authHandler.clear();
+        authHandler.clear(ctx);
         userHandler.clear(ctx);
     }
 
@@ -74,6 +74,9 @@ public class Server {
 
     // should the `json` field be a TEXT type instead? Or maybe a JSON type?
     private final String[] createStatements = {
+//            """
+//            DROP TABLE IF EXISTS auths
+//            """,
             """
             CREATE TABLE IF NOT EXISTS users (
             `username` varchar(50) NOT NULL,
@@ -86,7 +89,7 @@ public class Server {
             CREATE TABLE IF NOT EXISTS auths (
             `authtoken` varchar(50) NOT NULL,
             `username` varchar(50) NOT NULL,
-            PRIMARY KEY (`username`)
+            PRIMARY KEY (`authtoken`)
             )
             """,
             """

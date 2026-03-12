@@ -19,7 +19,7 @@ public class SQLAuthDAO implements AuthDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Unable to update database");
+            throw new DataAccessException("Error: Unable to update database");
         }
 //        executeUpdate(statement, authData, json);
     }
@@ -42,9 +42,9 @@ public class SQLAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Unable to update database");
+            throw new DataAccessException("Error: Unable to update database");
         }
-        throw new DataAccessException("No authData exists with the given authToken");
+        throw new DataAccessException("Error: No authData exists with the given authToken");
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {
@@ -55,14 +55,33 @@ public class SQLAuthDAO implements AuthDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Unable to update database");
+            throw new DataAccessException("Error: Unable to update database");
         }
-        throw new DataAccessException("No authData exists with the given authToken");
-
+//        throw new DataAccessException("Error: No authData exists with the given authToken");
     }
 
-    public void clear() {
+    public void removeUserAuths(String username) throws DataAccessException {
+        var statement = "DELETE from auths WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                ps.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Error: Unable to update database");
+        }
+//        throw new DataAccessException("Error: No authData exists with the given authToken");
+    }
 
+    public void clear() throws DataAccessException {
+        var statement = "TRUNCATE auths";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: Unable to update database");
+        }
     }
 
 

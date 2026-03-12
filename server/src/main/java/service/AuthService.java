@@ -18,6 +18,7 @@ public class AuthService {
 
     public void createAuth(AuthData auth) throws DataAccessException {
         // add a method at some point that removes any auths from a user with the given username
+//        authDAO.removeUserAuths(auth.username());
         authDAO.createAuth(auth);
     }
 
@@ -29,7 +30,7 @@ public class AuthService {
         authDAO.deleteAuth(authToken);
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         authDAO.clear();
     }
 

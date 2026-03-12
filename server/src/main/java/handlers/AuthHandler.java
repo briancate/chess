@@ -46,8 +46,14 @@ public class AuthHandler {
         }
     }
 
-    public void clear() {
-        authService.clear();
+    public void clear(Context ctx) throws DataAccessException {
+        try {
+            authService.clear();
+        }
+        catch (DataAccessException ex) {
+            ctx.status(500);
+            throw ex;
+        }
     }
 
 }

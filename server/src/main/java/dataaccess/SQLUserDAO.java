@@ -20,7 +20,7 @@ public class SQLUserDAO implements UserDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to update database");
+            throw new DataAccessException("Error: Unable to update database");
         }
     }
 
@@ -43,9 +43,9 @@ public class SQLUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to update database");
+            throw new DataAccessException("Error: Unable to update database");
         }
-        throw new DataAccessException("No user with the given username");
+        throw new DataAccessException("Error: No user with the given username");
     }
 
     public void clear() throws DataAccessException {
@@ -55,7 +55,7 @@ public class SQLUserDAO implements UserDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to update database");
+            throw new DataAccessException("Error: Unable to update database");
         }
     }
 
