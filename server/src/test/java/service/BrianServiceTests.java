@@ -106,7 +106,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulCreateGame() throws DataAccessException {
+    void successfulCreateGame() throws ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         int gameID = gameService.createGame(gameData);
@@ -114,7 +114,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulListGames() throws DataAccessException {
+    void successfulListGames() throws ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         gameService.createGame(gameData);
@@ -123,7 +123,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulGetGame() throws DataAccessException {
+    void successfulGetGame() throws DataAccessException, ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         int gameID = gameService.createGame(gameData);
@@ -132,7 +132,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulGetGame() throws DataAccessException {
+    void unsuccessfulGetGame() throws ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         gameService.createGame(gameData);
@@ -140,7 +140,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulUpdateGameWhite() throws DataAccessException {
+    void successfulUpdateGameWhite() throws DataAccessException, ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         int gameID = gameService.createGame(gameData);
@@ -150,7 +150,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulUpdateGameBlack() throws DataAccessException {
+    void successfulUpdateGameBlack() throws DataAccessException, ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         int gameID = gameService.createGame(gameData);
@@ -160,7 +160,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulUpdateGame() throws DataAccessException {
+    void unsuccessfulUpdateGame() throws ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         int gameID = gameService.createGame(gameData);
@@ -168,7 +168,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void clearGame() throws DataAccessException {
+    void clearGame() throws ResponseException {
         GameService gameService = new GameService(new MemoryGameDAO());
         GameData gameData = new GameData(0, null, null, "gamename", null);
         int gameID = gameService.createGame(gameData);

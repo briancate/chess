@@ -4,6 +4,7 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
 import model.JoinData;
+import server.ResponseException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,7 +19,7 @@ public class SQLGameDAO implements GameDAO {
 
     private final Gson gson = new Gson();
 
-    public int createGame(GameData gameData) throws DataAccessException {
+    public int createGame(GameData gameData) throws ResponseException {
         var statement = "INSERT INTO games (gamename, chessgame) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
@@ -30,10 +31,10 @@ public class SQLGameDAO implements GameDAO {
                     return rs.getInt(1);
                 }
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
         }
-        throw new DataAccessException("Error: did not return an integer");
+        throw new ResponseException("Error: did not return an integer");
     }
 
     public GameData readGame(ResultSet rs) throws SQLException {
@@ -45,7 +46,7 @@ public class SQLGameDAO implements GameDAO {
         return new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
     }
 
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) throws DataAccessException, ResponseException {
         var statement = "SELECT gameid, whiteusername, blackusername, gamename, chessgame from games WHERE gameid = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -56,12 +57,12 @@ public class SQLGameDAO implements GameDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+            throw new ResponseException("Error: Unable to update database");
         }
-        throw new DataAccessException("Error: unable to create a GameData object");
+        throw new DataAccessException("Error: no gameData with given gameID");
     }
 
-    public Collection<GameData> listGames() throws DataAccessException {
+    public Collection<GameData> listGames() throws ResponseException {
         var statement = "SELECT gameid, whiteusername, blackusername, gamename, chessgame from games";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -72,13 +73,13 @@ public class SQLGameDAO implements GameDAO {
                 }
                 return gameList;
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
         }
 
     }
 
-    public void updateWhiteUsername(JoinData joinData, String username) throws DataAccessException {
+    public void updateWhiteUsername(JoinData joinData, String username) throws ResponseException {
         var statement = "UPDATE games SET whiteusername = ? WHERE gameid = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -86,12 +87,12 @@ public class SQLGameDAO implements GameDAO {
                 ps.setInt(2, joinData.gameID());
                 ps.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
         }
     }
 
-    public void updateBlackUsername(JoinData joinData, String username) throws DataAccessException {
+    public void updateBlackUsername(JoinData joinData, String username) throws ResponseException {
         var statement = "UPDATE games SET blackusername = ? WHERE gameid = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -99,19 +100,19 @@ public class SQLGameDAO implements GameDAO {
                 ps.setInt(2, joinData.gameID());
                 ps.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
         }
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() throws ResponseException {
         var statement = "TRUNCATE games";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
         }
     }
 

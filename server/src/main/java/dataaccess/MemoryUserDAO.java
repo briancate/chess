@@ -9,7 +9,7 @@ public class MemoryUserDAO implements UserDAO {
 
     private final ArrayList<UserData> userList = new ArrayList<>();
 
-    public void createUser(UserData userData) throws ResponseException, DataAccessException {
+    public void createUser(UserData userData) throws ResponseException {
         try {
             getUser(userData.username());
         }

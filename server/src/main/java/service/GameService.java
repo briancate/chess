@@ -4,6 +4,7 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.GameData;
 import model.JoinData;
+import server.ResponseException;
 
 import java.util.Collection;
 
@@ -13,19 +14,19 @@ public class GameService {
 
     public GameService(GameDAO gameDAO) {this.gameDAO = gameDAO;}
 
-    public int createGame(GameData gameData) throws DataAccessException {
+    public int createGame(GameData gameData) throws ResponseException {
         return gameDAO.createGame(gameData);
     }
 
-    public Collection<GameData> listGames() throws DataAccessException {
+    public Collection<GameData> listGames() throws ResponseException {
         return gameDAO.listGames();
     }
 
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) throws DataAccessException, ResponseException {
         return gameDAO.getGame(gameID);
     }
 
-    public void updateGame(JoinData joinData, String username) throws DataAccessException {
+    public void updateGame(JoinData joinData, String username) throws DataAccessException, ResponseException {
         switch (joinData.playerColor()) {
             case "WHITE" : gameDAO.updateWhiteUsername(joinData, username); break;
             case "BLACK" : gameDAO.updateBlackUsername(joinData, username); break;
@@ -33,7 +34,7 @@ public class GameService {
         }
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() throws ResponseException {
         gameDAO.clear();
     }
 

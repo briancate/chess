@@ -34,15 +34,28 @@ public class GameHandler {
             ctx.status(400);
             throw new DataAccessException("Error: bad request");
         }
-        int gameID = gameService.createGame(gameData);
+        int gameID;
+        try {
+            gameID = gameService.createGame(gameData);
+        }
+        catch (ResponseException ex) {
+            ctx.status(500);
+            throw ex;
+        }
         ctx.result(gson.toJson(Map.of("gameID", gameID)));
     }
 
     public void listGames(Context ctx) throws DataAccessException, ResponseException {
         authHandler.validateAuth(ctx);
-        Collection<GameData> oldGameList = gameService.listGames();
+        Collection<GameData> oldGameList;
+        try {
+            oldGameList = gameService.listGames();
+        }
+        catch (ResponseException ex) {
+            ctx.status(500);
+            throw ex;
+        }
         ArrayList<JsonFriendlyGameData> gameList = new ArrayList<>();
-
         for (GameData game : oldGameList) {
             gameList.add(new JsonFriendlyGameData(
                     game.gameID(),
@@ -66,6 +79,10 @@ public class GameHandler {
             ctx.status(400);
             throw ex;
         }
+        catch (ResponseException ex) {
+            ctx.status(500);
+            throw ex;
+        }
         if (joinData.playerColor()==null ||
                 (!joinData.playerColor().equals("WHITE") && !joinData.playerColor().equals("BLACK"))) {
             ctx.status(400);
@@ -80,13 +97,21 @@ public class GameHandler {
             ctx.status(403);
             throw new DataAccessException("Error: already taken");
         }
-        gameService.updateGame(joinData, username);
+
+        try {
+            gameService.updateGame(joinData, username);
+        }
+        catch (ResponseException ex) {
+            ctx.status(500);
+            throw ex;
+        }
+
     }
-    public void clear(Context ctx) throws DataAccessException {
+    public void clear(Context ctx) throws ResponseException {
         try {
             gameService.clear();
         }
-        catch (DataAccessException ex) {
+        catch (ResponseException ex) {
             ctx.status(500);
             throw ex;
         }
