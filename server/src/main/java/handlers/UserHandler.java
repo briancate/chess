@@ -37,7 +37,7 @@ public class UserHandler { // later do "extends Handler"?
 
         try {
             userService.register(userData);
-            AuthData authData = authHandler.createAuth(userData.username());
+            AuthData authData = authHandler.createAuth(userData.username(), ctx);
             ctx.result(gson.toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
         }
         catch (DataAccessException ex) {
@@ -61,7 +61,7 @@ public class UserHandler { // later do "extends Handler"?
             // there could be a duplicate authData here (as in two authData objects with the same username if you don't log out)
             userData = userService.getUser(initialData.username());
             if (!initialData.password().equals(userData.password())) {throw new DataAccessException("Error: unauthorised");}
-            AuthData authData = authHandler.createAuth(userData.username());
+            AuthData authData = authHandler.createAuth(userData.username(), ctx);
             ctx.result(gson.toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
         }
         catch (DataAccessException ex) {

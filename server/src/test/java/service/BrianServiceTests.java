@@ -57,7 +57,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void createAuth() {
+    void createAuth() throws DataAccessException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -72,7 +72,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulGetAuth() {
+    void unsuccessfulGetAuth() throws DataAccessException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -88,7 +88,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulDeleteAuth() {
+    void unsuccessfulDeleteAuth() throws DataAccessException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -96,7 +96,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void clearAuth() {
+    void clearAuth() throws DataAccessException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);

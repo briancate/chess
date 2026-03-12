@@ -15,9 +15,15 @@ public class AuthHandler {
         this.authService = new AuthService(authDAO);
     }
 
-    public AuthData createAuth(String username) {
+    public AuthData createAuth(String username, Context ctx) throws DataAccessException {
         AuthData authData = new AuthData(AuthService.generateToken(), username);
-        authService.createAuth(authData);
+        try {
+            authService.createAuth(authData);
+        }
+        catch (DataAccessException ex) {
+            ctx.status(500);
+            throw ex;
+        }
         return authData;
     }
 

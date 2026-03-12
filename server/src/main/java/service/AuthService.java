@@ -16,7 +16,7 @@ public class AuthService {
 
     public AuthService(AuthDAO authDAO) {this.authDAO = authDAO;}
 
-    public void createAuth(AuthData auth) {
+    public void createAuth(AuthData auth) throws DataAccessException {
         // add a method at some point that removes any auths from a user with the given username
         authDAO.createAuth(auth);
     }
