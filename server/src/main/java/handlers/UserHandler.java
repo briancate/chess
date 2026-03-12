@@ -5,6 +5,7 @@ import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
+import server.ResponseException;
 import service.UserService;
 import io.javalin.http.Context;
 import com.google.gson.Gson;
@@ -26,7 +27,7 @@ public class UserHandler { // later do "extends Handler"?
         this.authHandler = authHandler;
     }
 
-    public void handleRegister(Context ctx) throws DataAccessException {
+    public void handleRegister(Context ctx) throws DataAccessException, ResponseException {
         UserData userData = fromJsonToUserData(ctx);
         try {
             if (userData.username()==null || userData.password()==null) {throw new DataAccessException("Error: bad request");}
@@ -47,7 +48,7 @@ public class UserHandler { // later do "extends Handler"?
         }
     }
 
-    public void handleLogin(Context ctx) throws DataAccessException {
+    public void handleLogin(Context ctx) throws DataAccessException, ResponseException {
         UserData userData;
         UserData initialData = fromJsonToUserData(ctx); // this won't have an email field, so it should be left blank
 
@@ -72,10 +73,16 @@ public class UserHandler { // later do "extends Handler"?
         }
     }
 
-    public void handleLogout(Context ctx) throws DataAccessException {
+    public void handleLogout(Context ctx) throws DataAccessException, ResponseException {
         String authToken = ctx.header("authorization");
-        authHandler.validateAuth(ctx);
-        authHandler.deleteAuth(authToken);
+        try {
+            authHandler.validateAuth(ctx);
+            authHandler.deleteAuth(authToken);
+        }
+        catch (ResponseException ex) {
+            ctx.status(500);
+            throw ex;
+        }
     }
 
     public void clear(Context ctx) throws DataAccessException {

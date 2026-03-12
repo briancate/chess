@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
+import server.ResponseException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,7 +10,7 @@ import java.sql.SQLException;
 
 public class SQLAuthDAO implements AuthDAO {
 
-    public void createAuth(AuthData authData) throws DataAccessException { // throws ResponseException
+    public void createAuth(AuthData authData) throws ResponseException { // throws ResponseException
         var statement = "INSERT INTO auths (authtoken, username) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -18,7 +19,7 @@ public class SQLAuthDAO implements AuthDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error: Unable to update database");
+            throw new ResponseException("Error: Unable to update database");
         }
 //        executeUpdate(statement, authData, json);
     }
@@ -27,10 +28,9 @@ public class SQLAuthDAO implements AuthDAO {
         String authToken = rs.getString("authtoken");
         String username = rs.getString("username");
         return new AuthData(authToken, username);
-
     }
 
-    public AuthData getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws DataAccessException, ResponseException {
         var statement = "SELECT authtoken, username from auths WHERE authtoken = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -41,12 +41,12 @@ public class SQLAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error: Unable to update database");
+            throw new ResponseException("Error: Unable to update database");
         }
         throw new DataAccessException("Error: No authData exists with the given authToken");
     }
 
-    public void deleteAuth(String authToken) throws DataAccessException {
+    public void deleteAuth(String authToken) throws ResponseException {
         var statement = "DELETE from auths WHERE authtoken = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -54,19 +54,18 @@ public class SQLAuthDAO implements AuthDAO {
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error: Unable to update database");
+            throw new ResponseException("Error: Unable to update database");
         }
-//        throw new DataAccessException("Error: No authData exists with the given authToken");
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() throws ResponseException {
         var statement = "TRUNCATE auths";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
         }
     }
 

@@ -7,6 +7,7 @@ import model.AuthData;
 import model.GameData;
 import model.JoinData;
 import model.JsonFriendlyGameData;
+import server.ResponseException;
 import service.GameService;
 import io.javalin.http.Context;
 
@@ -25,8 +26,9 @@ public class GameHandler {
         this.authHandler = authHandler;
     }
 
-    public void handleCreate(Context ctx) throws DataAccessException {
+    public void handleCreate(Context ctx) throws DataAccessException, ResponseException {
         authHandler.validateAuth(ctx);
+
         GameData gameData = gson.fromJson(ctx.body(), GameData.class); // create a GameData (most will be null)
         if (gameData.gameName()==null || gameData.gameName().isEmpty()) { // if they didn't provide a name, throw a 400 error
             ctx.status(400);
@@ -36,7 +38,7 @@ public class GameHandler {
         ctx.result(gson.toJson(Map.of("gameID", gameID)));
     }
 
-    public void listGames(Context ctx) throws DataAccessException {
+    public void listGames(Context ctx) throws DataAccessException, ResponseException {
         authHandler.validateAuth(ctx);
         Collection<GameData> oldGameList = gameService.listGames();
         ArrayList<JsonFriendlyGameData> gameList = new ArrayList<>();
@@ -52,7 +54,7 @@ public class GameHandler {
         ctx.result(gson.toJson(Map.of("games", gameList)));
     }
 
-    public void handleJoin(Context ctx) throws DataAccessException {
+    public void handleJoin(Context ctx) throws DataAccessException, ResponseException {
         String authToken = ctx.header("authorization");
         authHandler.validateAuth(ctx);
         JoinData joinData = gson.fromJson(ctx.body(), JoinData.class);

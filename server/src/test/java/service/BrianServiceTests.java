@@ -4,6 +4,7 @@ import dataaccess.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import model.*;
+import server.ResponseException;
 
 import java.util.Collection;
 
@@ -57,14 +58,14 @@ public class BrianServiceTests {
     }
 
     @Test
-    void createAuth() throws DataAccessException {
+    void createAuth() throws DataAccessException, ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
     }
 
     @Test
-    void successfulGetAuth() throws DataAccessException {
+    void successfulGetAuth() throws DataAccessException, ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -72,7 +73,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulGetAuth() throws DataAccessException {
+    void unsuccessfulGetAuth() throws DataAccessException, ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -80,7 +81,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulDeleteAuth() throws DataAccessException {
+    void successfulDeleteAuth() throws DataAccessException, ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -88,20 +89,20 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulDeleteAuth() throws DataAccessException {
+    void unsuccessfulDeleteAuth() throws DataAccessException, ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
-        Assertions.assertThrows(DataAccessException.class, () -> authService.deleteAuth("not an authToken"));
+        Assertions.assertThrows(ResponseException.class, () -> authService.deleteAuth("not an authToken"));
     }
 
     @Test
-    void clearAuth() throws DataAccessException {
+    void clearAuth() throws DataAccessException, ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
         authService.clear();
-        Assertions.assertThrows(DataAccessException.class, () -> authService.deleteAuth(authData.authToken()));
+        Assertions.assertThrows(ResponseException.class, () -> authService.deleteAuth(authData.authToken()));
     }
 
     @Test

@@ -3,6 +3,7 @@ package handlers;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
+import server.ResponseException;
 import service.AuthService;
 import io.javalin.http.Context;
 
@@ -15,27 +16,27 @@ public class AuthHandler {
         this.authService = new AuthService(authDAO);
     }
 
-    public AuthData createAuth(String username, Context ctx) throws DataAccessException {
+    public AuthData createAuth(String username, Context ctx) throws ResponseException {
         AuthData authData = new AuthData(AuthService.generateToken(), username);
         try {
             authService.createAuth(authData);
         }
-        catch (DataAccessException ex) {
+        catch (ResponseException ex) {
             ctx.status(500);
             throw ex;
         }
         return authData;
     }
 
-    public AuthData getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws DataAccessException, ResponseException {
         return authService.getAuth(authToken);
     }
 
-    public void deleteAuth(String authToken) throws DataAccessException {
+    public void deleteAuth(String authToken) throws ResponseException {
         authService.deleteAuth(authToken);
     }
 
-    public void validateAuth(Context ctx) throws DataAccessException {
+    public void validateAuth(Context ctx) throws DataAccessException, ResponseException {
         String authToken = ctx.header("authorization");
         try {
             getAuth(authToken);
@@ -44,13 +45,17 @@ public class AuthHandler {
             ctx.status(401);
             throw ex;
         }
+        catch (ResponseException ex) {
+            ctx.status(500);
+            throw ex;
+        }
     }
 
-    public void clear(Context ctx) throws DataAccessException {
+    public void clear(Context ctx) throws ResponseException {
         try {
             authService.clear();
         }
-        catch (DataAccessException ex) {
+        catch (ResponseException ex) {
             ctx.status(500);
             throw ex;
         }

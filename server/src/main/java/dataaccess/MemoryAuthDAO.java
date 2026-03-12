@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
+import server.ResponseException;
 
 import java.util.ArrayList;
 
@@ -18,14 +19,14 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
 
-    public void deleteAuth(String authToken) throws DataAccessException {
+    public void deleteAuth(String authToken) throws ResponseException {
         for (AuthData auth : authList) {
             if (auth.authToken().equals(authToken)) {
                 authList.remove(auth);
                 return;
             }
         }
-        throw new DataAccessException("Error: bad request");
+        throw new ResponseException("Error: bad request");
     }
 
     public void clear() {

@@ -64,7 +64,7 @@ public class Server {
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
-    private void clear(Context ctx) throws DataAccessException {
+    private void clear(Context ctx) throws DataAccessException, ResponseException {
         gameHandler.clear(ctx);
         authHandler.clear(ctx);
         userHandler.clear(ctx);
