@@ -25,14 +25,14 @@ public class Server {
             System.out.println("Failed to initialize the database, RIP");
         }
 
+//        this.authHandler = new AuthHandler(new SQLAuthDAO());
+        this.userHandler = new UserHandler(new SQLUserDAO(), authHandler);
+//        this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
+
         // add a way for this to swap between memory and SQL
         this.authHandler = new AuthHandler(new MemoryAuthDAO());
-        this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
+//        this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
         this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
-
-//        this.authHandler = new AuthHandler(new SQLAuthDAO());
-//        this.userHandler = new UserHandler(new SQLUserDAO(), authHandler);
-//        this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
 
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
@@ -64,10 +64,10 @@ public class Server {
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
-    private void clear(Context ctx) {
+    private void clear(Context ctx) throws DataAccessException {
         gameHandler.clear();
         authHandler.clear();
-        userHandler.clear();
+        userHandler.clear(ctx);
     }
 
     // add a configure database method

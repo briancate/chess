@@ -76,7 +76,13 @@ public class UserHandler { // later do "extends Handler"?
         authHandler.deleteAuth(authToken);
     }
 
-    public void clear() {
-        userService.clear();
+    public void clear(Context ctx) throws DataAccessException {
+        try {
+            userService.clear();
+        }
+        catch (DataAccessException ex) {
+            ctx.status(500);
+            throw ex;
+        }
     }
 }

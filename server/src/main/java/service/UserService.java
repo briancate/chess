@@ -18,7 +18,7 @@ public class UserService {
         return userDAO.getUser(username);
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         userDAO.clear();
     }
 

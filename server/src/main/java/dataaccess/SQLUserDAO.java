@@ -1,27 +1,17 @@
 package dataaccess;
 
-import model.AuthData;
 import model.UserData;
-import server.ResponseException;
+import org.eclipse.jetty.server.Authentication;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SQLUserDAO implements UserDAO {
 
     public void createUser(UserData userData) throws DataAccessException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, userData);
-    }
-
-    public UserData getUser(String username) throws DataAccessException {
-        return new UserData("not a username", "not a password", "not an email");
-    }
-
-    public void clear() {}
-
-    private void executeUpdate(String statement, UserData userData) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setString(1, userData.username());
@@ -33,5 +23,53 @@ public class SQLUserDAO implements UserDAO {
             throw new DataAccessException("Unable to update database");
         }
     }
+
+    public UserData readUser(ResultSet rs) throws SQLException {
+        String username = rs.getString("username");
+        String password = rs.getString("password");
+        String email = rs.getString("email");
+        return new UserData(username, password, email);
+
+    }
+
+    public UserData getUser(String username) throws DataAccessException {
+        var statement = "SELECT username, password, email FROM users WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    return readUser(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to update database");
+        }
+        throw new DataAccessException("No user with the given username");
+    }
+
+    public void clear() throws DataAccessException {
+        var statement = "TRUNCATE users";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to update database");
+        }
+    }
+
+//    private void executeUpdate(String statement, String username, String password, String email) throws DataAccessException {
+//        try (Connection conn = DatabaseManager.getConnection()) {
+//            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+//                ps.setString(1, username);
+//                ps.setString(2, password);
+//                ps.setString(3, email);
+//                ps.executeUpdate();
+//            }
+//        } catch (SQLException e) {
+//            throw new DataAccessException("Unable to update database");
+//        }
+//    }
 
 }
