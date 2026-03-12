@@ -2,6 +2,7 @@ package dataaccess;
 
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
+import server.ResponseException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +11,25 @@ import java.sql.SQLException;
 
 public class SQLUserDAO implements UserDAO {
 
-    public void createUser(UserData userData) throws DataAccessException {
+    public void checkIfTaken(String username) throws DataAccessException, ResponseException {
+        var statement = "SELECT username from users WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    throw new DataAccessException("Error: user already exists with given username");
+                }
+            }
+        } catch (SQLException e) {
+            throw new ResponseException("Error: Unable to update database");
+        }
+    }
+
+    public void createUser(UserData userData) throws ResponseException, DataAccessException {
+
+        checkIfTaken(userData.username());
+
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -21,8 +40,8 @@ public class SQLUserDAO implements UserDAO {
                 ps.setString(3, userData.email());
                 ps.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Database error: " + e.getMessage());
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Database error: " + e.getMessage());
         }
     }
 
@@ -34,7 +53,7 @@ public class SQLUserDAO implements UserDAO {
 
     }
 
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) throws DataAccessException, ResponseException {
         var statement = "SELECT username, password, email FROM users WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -45,33 +64,19 @@ public class SQLUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+            throw new ResponseException("Error: Unable to update database");
         }
         throw new DataAccessException("Error: No user with the given username");
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() throws ResponseException {
         var statement = "TRUNCATE users";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.executeUpdate();
             }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
         }
     }
-
-//    private void executeUpdate(String statement, String username, String password, String email) throws DataAccessException {
-//        try (Connection conn = DatabaseManager.getConnection()) {
-//            try (PreparedStatement ps = conn.prepareStatement(statement)) {
-//                ps.setString(1, username);
-//                ps.setString(2, password);
-//                ps.setString(3, email);
-//                ps.executeUpdate();
-//            }
-//        } catch (SQLException e) {
-//            throw new DataAccessException("Unable to update database");
-//        }
-//    }
-
 }

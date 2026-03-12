@@ -11,14 +11,14 @@ import java.util.Collection;
 public class BrianServiceTests {
 
     @Test
-    void successfulRegister() throws DataAccessException {
+    void successfulRegister() throws ResponseException, DataAccessException {
         UserService userService = new UserService(new MemoryUserDAO());
         UserData userData = new UserData("brian", "abc123", "me@mail.com");
         userService.register(userData);
     }
 
     @Test
-    void duplicateUserRegister() throws DataAccessException {
+    void duplicateUserRegister() throws ResponseException, DataAccessException {
         UserService userService = new UserService(new MemoryUserDAO());
         UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
         userService.register(userData1);
@@ -27,7 +27,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulGetUser() throws DataAccessException {
+    void successfulGetUser() throws DataAccessException, ResponseException {
         UserService userService = new UserService(new MemoryUserDAO());
         UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
         userService.register(userData1);
@@ -35,7 +35,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulGetUser() throws DataAccessException {
+    void unsuccessfulGetUser() throws ResponseException, DataAccessException {
         UserService userService = new UserService(new MemoryUserDAO());
         UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
         userService.register(userData1);
@@ -43,7 +43,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void clearUser() throws DataAccessException {
+    void clearUser() throws ResponseException, DataAccessException {
         UserService userService = new UserService(new MemoryUserDAO());
         UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
         userService.register(userData1);
@@ -58,7 +58,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void createAuth() throws DataAccessException, ResponseException {
+    void createAuth() throws ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -73,7 +73,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulGetAuth() throws DataAccessException, ResponseException {
+    void unsuccessfulGetAuth() throws ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -81,7 +81,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void successfulDeleteAuth() throws DataAccessException, ResponseException {
+    void successfulDeleteAuth() throws ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -89,7 +89,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void unsuccessfulDeleteAuth() throws DataAccessException, ResponseException {
+    void unsuccessfulDeleteAuth() throws ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);
@@ -97,7 +97,7 @@ public class BrianServiceTests {
     }
 
     @Test
-    void clearAuth() throws DataAccessException, ResponseException {
+    void clearAuth() throws ResponseException {
         AuthService authService = new AuthService(new MemoryAuthDAO());
         AuthData authData = new AuthData(AuthService.generateToken(), "brian");
         authService.createAuth(authData);

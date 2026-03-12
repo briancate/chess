@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.UserData;
+import server.ResponseException;
 
 import java.util.ArrayList;
 
@@ -8,7 +9,7 @@ public class MemoryUserDAO implements UserDAO {
 
     private final ArrayList<UserData> userList = new ArrayList<>();
 
-    public void createUser(UserData userData) throws DataAccessException {
+    public void createUser(UserData userData) throws ResponseException, DataAccessException {
         try {
             getUser(userData.username());
         }
@@ -17,7 +18,7 @@ public class MemoryUserDAO implements UserDAO {
             return;
         }
         // you only reach here if the username is already taken
-        throw new DataAccessException("Error: already taken");
+        throw new ResponseException("Error: already taken");
     }
 
     public UserData getUser(String username) throws DataAccessException {

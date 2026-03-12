@@ -43,9 +43,14 @@ public class UserHandler { // later do "extends Handler"?
             ctx.result(gson.toJson(Map.of("username", userData.username(), "authToken", authData.authToken())));
         }
         catch (DataAccessException ex) {
-            ctx.status(403);
+            ctx.status(403); // THIS MIGHT NEED TO BE 403 SOMEHOW
             throw ex;
         }
+        catch (ResponseException ex) {
+            ctx.status(500);
+            throw ex;
+        }
+
     }
 
     public void handleLogin(Context ctx) throws DataAccessException, ResponseException {
@@ -85,11 +90,11 @@ public class UserHandler { // later do "extends Handler"?
         }
     }
 
-    public void clear(Context ctx) throws DataAccessException {
+    public void clear(Context ctx) throws ResponseException {
         try {
             userService.clear();
         }
-        catch (DataAccessException ex) {
+        catch (ResponseException ex) {
             ctx.status(500);
             throw ex;
         }
