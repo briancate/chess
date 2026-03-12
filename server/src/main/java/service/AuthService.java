@@ -16,7 +16,10 @@ public class AuthService {
 
     public AuthService(AuthDAO authDAO) {this.authDAO = authDAO;}
 
-    public void createAuth(AuthData auth) {authDAO.createAuth(auth);}
+    public void createAuth(AuthData auth) {
+        // add a method at some point that removes any auths from a user with the given username
+        authDAO.createAuth(auth);
+    }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
         return authDAO.getAuth(authToken);

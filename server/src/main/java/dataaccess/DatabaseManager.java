@@ -41,7 +41,7 @@ public class DatabaseManager {
      * }
      * </code>
      */
-    // I changed this to public singe it wouldn't let me use it otherwise
+    // I changed this to public since it wouldn't let me use it otherwise
     public static Connection getConnection() throws DataAccessException {
         try {
             //do not wrap the following line with a try-with-resources

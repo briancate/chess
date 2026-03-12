@@ -11,15 +11,19 @@ import java.sql.SQLException;
 public class Server {
 
     private final Javalin javalin;
-
     private final AuthHandler authHandler;
     private final UserHandler userHandler;
     private final GameHandler gameHandler;
 
     public Server() {
 
-        // configureDatabase();
-        // have the Server contructor throw the error?
+        try {
+            configureDatabase();
+        }
+        catch (Exception ex) {
+            // should I return out of the function? Idk
+            System.out.println("Failed to initialize the database, RIP");
+        }
 
         // add a way for this to swap between memory and SQL
         this.authHandler = new AuthHandler(new MemoryAuthDAO());
@@ -32,6 +36,8 @@ public class Server {
 
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
+
+
 
         // Register your endpoints and exception handlers here.
         .post("/user", userHandler::handleRegister)
@@ -69,38 +75,49 @@ public class Server {
     // should the `json` field be a TEXT type instead? Or maybe a JSON type?
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS auths (
-            `authtoken` varchar(50) NOT NULL,
-            `json` varchar(256) NOT NULL,
-            PRIMARY KEY (`authtoken`)
+            CREATE TABLE IF NOT EXISTS users (
+            `username` varchar(50) NOT NULL,
+            `password` varchar(50) NOT NULL,
+            `email` varchar(50),
+            PRIMARY KEY (`username`)
             )
             """,
             """
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS auths (
+            `authtoken` varchar(50) NOT NULL,
             `username` varchar(50) NOT NULL,
-            `json` varchar(256) NOT NULL,
             PRIMARY KEY (`username`)
             )
             """,
             """
             CREATE TABLE IF NOT EXISTS games (
             `gameid` int NOT NULL AUTO_INCREMENT,
-            `json` varchar(256) NOT NULL,
+            `whiteusername` varchar(50),
+            `blackusername` varchar(50),
+            `gamename` varchar(50) NOT NULL,
+            `chessgame` TEXT,
             PRIMARY KEY (`gameid`)
             )
             """
     };
 
-//    private void configureDatabase() throws ResponseException {
-//        DatabaseManager.createDatabase();
-//        try (Connection conn = DatabaseManager.getConnection()) {
-//            for (String statement : createStatements) {
-//                try (var preparedStatement = conn.prepareStatement(statement)) {
-//                    preparedStatement.executeUpdate();
-//                }
-//            }
-//        } catch (SQLException ex) {
-//            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
+    private void configureDatabase() throws ResponseException, DataAccessException {
+//        try {
+//            DatabaseManager.createDatabase();
 //        }
-//    }
+//        catch (DataAccessException ex) {
+//            throw new ResponseException("Unable to create database");
+//        }
+        DatabaseManager.createDatabase();
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            for (String statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new ResponseException("Unable to configure database.");
+        }
+    }
 }
