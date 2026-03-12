@@ -27,12 +27,12 @@ public class Server {
 
         this.authHandler = new AuthHandler(new SQLAuthDAO());
         this.userHandler = new UserHandler(new SQLUserDAO(), authHandler);
-//        this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
+        this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
 
         // add a way for this to swap between memory and SQL
 //        this.authHandler = new AuthHandler(new MemoryAuthDAO());
 //        this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
-        this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
+//        this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
 
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
@@ -65,7 +65,7 @@ public class Server {
     }
 
     private void clear(Context ctx) throws DataAccessException {
-        gameHandler.clear();
+        gameHandler.clear(ctx);
         authHandler.clear(ctx);
         userHandler.clear(ctx);
     }
@@ -75,12 +75,12 @@ public class Server {
     // should the `json` field be a TEXT type instead? Or maybe a JSON type?
     private final String[] createStatements = {
 //            """
-//            DROP TABLE IF EXISTS auths
+//            DROP TABLE IF EXISTS users
 //            """,
             """
             CREATE TABLE IF NOT EXISTS users (
             `username` varchar(50) NOT NULL,
-            `password` varchar(50) NOT NULL,
+            `password` varchar(100) NOT NULL,
             `email` varchar(50),
             PRIMARY KEY (`username`)
             )

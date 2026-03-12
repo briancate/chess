@@ -1,7 +1,7 @@
 package dataaccess;
 
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,12 +15,14 @@ public class SQLUserDAO implements UserDAO {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setString(1, userData.username());
-                ps.setString(2, userData.password());
+//                ps.setString(2, userData.password());
+                String hashedPassword = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
+                ps.setString(2, hashedPassword);
                 ps.setString(3, userData.email());
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to update database");
+            throw new DataAccessException("Error: Database error: " + e.getMessage());
         }
     }
 

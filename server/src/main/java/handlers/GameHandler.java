@@ -80,8 +80,14 @@ public class GameHandler {
         }
         gameService.updateGame(joinData, username);
     }
-    public void clear() {
-        gameService.clear();
+    public void clear(Context ctx) throws DataAccessException {
+        try {
+            gameService.clear();
+        }
+        catch (DataAccessException ex) {
+            ctx.status(500);
+            throw ex;
+        }
     }
 
 }

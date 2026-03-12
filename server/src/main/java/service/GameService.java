@@ -13,11 +13,11 @@ public class GameService {
 
     public GameService(GameDAO gameDAO) {this.gameDAO = gameDAO;}
 
-    public int createGame(GameData gameData) {
+    public int createGame(GameData gameData) throws DataAccessException {
         return gameDAO.createGame(gameData);
     }
 
-    public Collection<GameData> listGames() {
+    public Collection<GameData> listGames() throws DataAccessException {
         return gameDAO.listGames();
     }
 
@@ -33,7 +33,7 @@ public class GameService {
         }
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         gameDAO.clear();
     }
 

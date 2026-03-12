@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-import server.ResponseException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,19 +51,6 @@ public class SQLAuthDAO implements AuthDAO {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setString(1, authToken);
-                ps.executeUpdate();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error: Unable to update database");
-        }
-//        throw new DataAccessException("Error: No authData exists with the given authToken");
-    }
-
-    public void removeUserAuths(String username) throws DataAccessException {
-        var statement = "DELETE from auths WHERE username = ?";
-        try (Connection conn = DatabaseManager.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                ps.setString(1, username);
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
