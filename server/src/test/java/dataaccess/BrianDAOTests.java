@@ -187,7 +187,7 @@ public class BrianDAOTests {
     }
 
     @Test
-    void unsuccessfulGetGame() throws DataAccessException, ResponseException {
+    void unsuccessfulGetGame() throws ResponseException {
         GameData gameData = new GameData(0, null, null, "the bestest game", new ChessGame());
         gameDAO.createGame(gameData);
         Assertions.assertThrows(DataAccessException.class, () -> gameDAO.getGame(42));
@@ -220,7 +220,7 @@ public class BrianDAOTests {
         gameDAO.createGame(gameData);
         gameDAO.updateWhiteUsername(new JoinData("white", 1), "brian");
 
-        Assertions.assertThrows(ResponseException.class, () -> gameDAO.updateWhiteUsername(new JoinData("white", 1), "not brian"));
+        Assertions.assertThrows(DataAccessException.class, () -> gameDAO.updateWhiteUsername(new JoinData("white", 1), "not brian"));
     }
 
     @Test
@@ -239,7 +239,7 @@ public class BrianDAOTests {
         gameDAO.createGame(gameData);
         gameDAO.updateBlackUsername(new JoinData("black", 1), "brian");
 
-        Assertions.assertThrows(ResponseException.class, () -> gameDAO.updateBlackUsername(new JoinData("black", 1), "not brian"));
+        Assertions.assertThrows(DataAccessException.class, () -> gameDAO.updateBlackUsername(new JoinData("black", 1), "not brian"));
     }
 
     @Test

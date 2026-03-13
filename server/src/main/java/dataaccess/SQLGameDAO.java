@@ -79,21 +79,30 @@ public class SQLGameDAO implements GameDAO {
 
     }
 
-    private void isTaken(String color, int gameID) throws DataAccessException {
-        String teamUsername = color + "username";
-        var statement = "SELECT ? from games where gameid = ? AND ? IS NOT NULL";
-        try (Connection conn = DatabaseManager.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                ps.setString(1, teamUsername);
-                ps.setInt(2, gameID);
-                ps.setString(3, teamUsername);
-                ResultSet rs = ps.executeQuery();
-                if ((rs.getFetchSize() != 0)) {throw new DataAccessException( "Error: the username is already taken");}
-            }
+    private void isTaken(String color, int gameID) throws DataAccessException, ResponseException {
+//        String teamUsername = color + "username";
+//        var statement = "SELECT ? from games where gameid = ? AND ? IS NOT NULL";
+//        try (Connection conn = DatabaseManager.getConnection()) {
+//            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+//                ps.setString(1, teamUsername);
+//                ps.setInt(2, gameID);
+//                ps.setString(3, teamUsername);
+//                ResultSet rs = ps.executeQuery();
+//                if ((rs.getFetchSize() != 0)) {throw new DataAccessException( "Error: the username is already taken");}
+//            }
+//        }
+//        catch (SQLException ex) {
+//            throw new DataAccessException("Error: " + ex.getMessage());
+//        }
+
+        GameData gameData = getGame(gameID);
+        if (color.equals("white")) {
+            if (gameData.whiteUsername() != null) {throw new DataAccessException("Error: username is already taken");}
         }
-        catch (SQLException ex) {
-            throw new DataAccessException("Error: " + ex.getMessage());
+        else {
+            if (gameData.blackUsername() != null) {throw new DataAccessException("Error: username is already taken");}
         }
+
     }
 
     public void updateWhiteUsername(JoinData joinData, String username) throws DataAccessException, ResponseException {
