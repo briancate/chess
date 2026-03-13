@@ -27,7 +27,7 @@ public class SQLUserDAO implements UserDAO {
             throw new ResponseException("Error: Unable to update database");
         }
         catch (Exception ex) {
-            throw new DataAccessException(ex.getMessage());
+            throw new DataAccessException("Error: " + ex.getMessage());
         }
     }
 
@@ -68,7 +68,7 @@ public class SQLUserDAO implements UserDAO {
                     return readUser(rs);
                 }
             }
-        } catch (SQLException e) {
+        } catch (SQLException | DataAccessException e) {
             throw new ResponseException("Error: Unable to update database");
         }
         throw new DataAccessException("Error: No user with the given username");

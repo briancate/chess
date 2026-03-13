@@ -20,13 +20,10 @@ public class Server {
 
         try {
             configureDatabase();
-//            databaseIsDown = false;
         }
         catch (Exception ex) {
-            // should I return out of the function? Idk
             System.out.println("Failed to initialize the database, RIP");
             throw new RuntimeException("Error: database is down");
-//            databaseIsDown = true;
         }
 
         this.authHandler = new AuthHandler(new SQLAuthDAO());
@@ -41,8 +38,6 @@ public class Server {
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
 
-
-
         // Register your endpoints and exception handlers here.
         .post("/user", userHandler::handleRegister)
         .post("/session", userHandler::handleLogin)
@@ -51,7 +46,8 @@ public class Server {
         .get("/game", gameHandler::listGames)
         .put("/game", gameHandler::handleJoin)
         .delete("/db", this::clear)
-        .exception(DataAccessException.class, this::exceptionHandler);
+        .exception(DataAccessException.class, this::dataAccessHandler)
+        .exception(ResponseException.class, this::responseHandler);
     }
 
     public int run(int desiredPort) {
@@ -63,14 +59,19 @@ public class Server {
         javalin.stop();
     }
 
-    private void exceptionHandler(Exception ex, Context ctx) {
-        // I should find a way to throw a 500 error if nothing else is met
-//        if (Exception.class == DataAccessException.class) {}
+    private void dataAccessHandler(DataAccessException ex, Context ctx) {
         if (ctx.status().getCode() < 400) {
             ctx.status(500);
             ctx.result("{\"message\": \"" + "Error: the database is down" + "\"}");
         }
-//        ctx.status(500);
+        ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
+    }
+
+    private void responseHandler(ResponseException ex, Context ctx) {
+        if (ctx.status().getCode() < 400) {
+            ctx.status(500);
+            ctx.result("{\"message\": \"" + "Error: the database is down" + "\"}");
+        }
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
@@ -123,7 +124,7 @@ public class Server {
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException("Unable to configure database.");
+            throw new DataAccessException("Error: Unable to configure database.");
         }
     }
 }
