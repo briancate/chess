@@ -21,10 +21,9 @@ public class SQLAuthDAO implements AuthDAO {
         } catch (SQLException | DataAccessException e) {
             throw new ResponseException("Error: Unable to update database");
         }
-//        executeUpdate(statement, authData, json);
     }
 
-    public AuthData readAuth(ResultSet rs) throws SQLException {
+    private AuthData readAuth(ResultSet rs) throws SQLException {
         String authToken = rs.getString("authtoken");
         String username = rs.getString("username");
         return new AuthData(authToken, username);

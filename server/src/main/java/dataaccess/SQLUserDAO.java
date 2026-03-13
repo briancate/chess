@@ -8,21 +8,26 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+//import
 
 public class SQLUserDAO implements UserDAO {
 
-    public void checkIfTaken(String username) throws DataAccessException, ResponseException {
+    private void checkIfTaken(String username) throws DataAccessException, ResponseException {
         var statement = "SELECT username from users WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
-                    throw new DataAccessException("Error: user already exists with given username");
+//                    throw new DataAccessException("Error: user already exists with given username");
+                    throw new Exception("Error: user already exists with given username");
                 }
             }
-        } catch (SQLException e) {
+        } catch (SQLException | DataAccessException e) {
             throw new ResponseException("Error: Unable to update database");
+        }
+        catch (Exception ex) {
+            throw new DataAccessException(ex.getMessage());
         }
     }
 
@@ -45,7 +50,7 @@ public class SQLUserDAO implements UserDAO {
         }
     }
 
-    public UserData readUser(ResultSet rs) throws SQLException {
+    private UserData readUser(ResultSet rs) throws SQLException {
         String username = rs.getString("username");
         String password = rs.getString("password");
         String email = rs.getString("email");

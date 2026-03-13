@@ -15,14 +15,18 @@ public class Server {
     private final UserHandler userHandler;
     private final GameHandler gameHandler;
 
+
     public Server() {
 
         try {
             configureDatabase();
+//            databaseIsDown = false;
         }
         catch (Exception ex) {
             // should I return out of the function? Idk
             System.out.println("Failed to initialize the database, RIP");
+            throw new RuntimeException("Error: database is down");
+//            databaseIsDown = true;
         }
 
         this.authHandler = new AuthHandler(new SQLAuthDAO());
@@ -59,12 +63,18 @@ public class Server {
         javalin.stop();
     }
 
-    private void exceptionHandler(DataAccessException ex, Context ctx) {
+    private void exceptionHandler(Exception ex, Context ctx) {
         // I should find a way to throw a 500 error if nothing else is met
+//        if (Exception.class == DataAccessException.class) {}
+        if (ctx.status().getCode() < 400) {
+            ctx.status(500);
+            ctx.result("{\"message\": \"" + "Error: the database is down" + "\"}");
+        }
+//        ctx.status(500);
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
-    private void clear(Context ctx) throws DataAccessException, ResponseException {
+    private void clear(Context ctx) throws server.ResponseException {
         gameHandler.clear(ctx);
         authHandler.clear(ctx);
         userHandler.clear(ctx);
@@ -104,15 +114,8 @@ public class Server {
             """
     };
 
-    private void configureDatabase() throws ResponseException, DataAccessException {
-//        try {
-//            DatabaseManager.createDatabase();
-//        }
-//        catch (DataAccessException ex) {
-//            throw new ResponseException("Unable to create database");
-//        }
+    private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
-
         try (Connection conn = DatabaseManager.getConnection()) {
             for (String statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
@@ -120,7 +123,7 @@ public class Server {
                 }
             }
         } catch (SQLException ex) {
-            throw new ResponseException("Unable to configure database.");
+            throw new DataAccessException("Unable to configure database.");
         }
     }
 }

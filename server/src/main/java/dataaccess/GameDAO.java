@@ -14,9 +14,9 @@ public interface GameDAO {
 
     Collection<GameData> listGames() throws ResponseException;
 
-    void updateWhiteUsername(JoinData joinData, String username) throws ResponseException;
+    void updateWhiteUsername(JoinData joinData, String username) throws DataAccessException, ResponseException;
 
-    void updateBlackUsername(JoinData joinData, String username) throws ResponseException;
+    void updateBlackUsername(JoinData joinData, String username) throws DataAccessException, ResponseException;
 
     void clear() throws ResponseException;
 }

@@ -37,7 +37,7 @@ public class SQLGameDAO implements GameDAO {
         throw new ResponseException("Error: did not return an integer");
     }
 
-    public GameData readGame(ResultSet rs) throws SQLException {
+    private GameData readGame(ResultSet rs) throws SQLException {
         int gameID = rs.getInt("gameid");
         String whiteUsername = rs.getString("whiteusername");
         String blackUsername = rs.getString("blackusername");
@@ -79,7 +79,26 @@ public class SQLGameDAO implements GameDAO {
 
     }
 
-    public void updateWhiteUsername(JoinData joinData, String username) throws ResponseException {
+    private void isTaken(String color, int gameID) throws DataAccessException {
+        String teamUsername = color + "username";
+        var statement = "SELECT ? from games where gameid = ? AND ? IS NOT NULL";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, teamUsername);
+                ps.setInt(2, gameID);
+                ps.setString(3, teamUsername);
+                ResultSet rs = ps.executeQuery();
+                if ((rs.getFetchSize() != 0)) {throw new DataAccessException( "Error: the username is already taken");}
+            }
+        }
+        catch (SQLException ex) {
+            throw new DataAccessException("Error: " + ex.getMessage());
+        }
+    }
+
+    public void updateWhiteUsername(JoinData joinData, String username) throws DataAccessException, ResponseException {
+        isTaken("white", joinData.gameID());
+
         var statement = "UPDATE games SET whiteusername = ? WHERE gameid = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -92,7 +111,9 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    public void updateBlackUsername(JoinData joinData, String username) throws ResponseException {
+    public void updateBlackUsername(JoinData joinData, String username) throws DataAccessException, ResponseException {
+        isTaken("black", joinData.gameID());
+
         var statement = "UPDATE games SET blackusername = ? WHERE gameid = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {

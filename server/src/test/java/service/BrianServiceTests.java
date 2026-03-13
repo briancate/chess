@@ -23,7 +23,7 @@ public class BrianServiceTests {
         UserData userData1 = new UserData("brian", "abc123", "me@mail.com");
         userService.register(userData1);
         UserData userData2 = new UserData("brian", "newpw", "new@gmail.com");
-        Assertions.assertThrows(DataAccessException.class, () -> userService.register(userData2));
+        Assertions.assertThrows(ResponseException.class, () -> userService.register(userData2));
     }
 
     @Test
