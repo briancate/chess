@@ -26,15 +26,18 @@ public class Server {
             throw new RuntimeException("Error: database is down");
         }
 
-        this.authHandler = new AuthHandler(new SQLAuthDAO());
-        this.userHandler = new UserHandler(new SQLUserDAO(), authHandler);
-        this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
-
+        boolean useSQL = true;
+        if (useSQL) {
+            this.authHandler = new AuthHandler(new SQLAuthDAO());
+            this.userHandler = new UserHandler(new SQLUserDAO(), authHandler);
+            this.gameHandler = new GameHandler(new SQLGameDAO(), authHandler);
+        }
         // add a way for this to swap between memory and SQL
-//        this.authHandler = new AuthHandler(new MemoryAuthDAO());
-//        this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
-//        this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
-
+        else {
+            this.authHandler = new AuthHandler(new MemoryAuthDAO());
+            this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
+            this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
+        }
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
 
@@ -59,19 +62,20 @@ public class Server {
         javalin.stop();
     }
 
-    private void dataAccessHandler(DataAccessException ex, Context ctx) {
+    private void setHTTPStatusTo500IfStatusNotSet(Context ctx) {
         if (ctx.status().getCode() < 400) {
             ctx.status(500);
             ctx.result("{\"message\": \"" + "Error: the database is down" + "\"}");
         }
+    }
+
+    private void dataAccessHandler(DataAccessException ex, Context ctx) {
+        setHTTPStatusTo500IfStatusNotSet(ctx);
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 
     private void responseHandler(ResponseException ex, Context ctx) {
-        if (ctx.status().getCode() < 400) {
-            ctx.status(500);
-            ctx.result("{\"message\": \"" + "Error: the database is down" + "\"}");
-        }
+        setHTTPStatusTo500IfStatusNotSet(ctx);
         ctx.result("{\"message\": \"" + ex.getMessage() + "\"}");
     }
 

@@ -90,14 +90,11 @@ public class SQLGameDAO implements GameDAO {
 
     }
 
-    public void updateWhiteUsername(JoinData joinData, String username) throws DataAccessException, ResponseException {
-        isTaken("white", joinData.gameID());
-
-        var statement = "UPDATE games SET whiteusername = ? WHERE gameid = ?";
+    private void doUpdateUsernameSQL(String statement, String username, int gameID) throws ResponseException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
-                ps.setInt(2, joinData.gameID());
+                ps.setInt(2, gameID);
                 ps.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
@@ -105,19 +102,18 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
+    public void updateWhiteUsername(JoinData joinData, String username) throws DataAccessException, ResponseException {
+        isTaken("white", joinData.gameID());
+
+        var statement = "UPDATE games SET whiteusername = ? WHERE gameid = ?";
+        doUpdateUsernameSQL(statement, username, joinData.gameID());
+    }
+
     public void updateBlackUsername(JoinData joinData, String username) throws DataAccessException, ResponseException {
         isTaken("black", joinData.gameID());
 
         var statement = "UPDATE games SET blackusername = ? WHERE gameid = ?";
-        try (Connection conn = DatabaseManager.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                ps.setString(1, username);
-                ps.setInt(2, joinData.gameID());
-                ps.executeUpdate();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new ResponseException("Error: Unable to update database");
-        }
+        doUpdateUsernameSQL(statement, username, joinData.gameID());
     }
 
     public void clear() throws ResponseException {

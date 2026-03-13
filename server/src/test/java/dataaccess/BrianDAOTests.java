@@ -42,17 +42,12 @@ public class BrianDAOTests {
 
     void tryValidSQLQuery(String statement, String parameter) throws DataAccessException, SQLException {
         try (Connection conn = DatabaseManager.getConnection()) {
-//            String statement = "SELECT authtoken, username from auths WHERE username = ?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setString(1, parameter);
                 ResultSet rs = ps.executeQuery();
                 if (!rs.next()) {throw new DataAccessException("Error: query returned an empty set");}
-//                Assertions.assertDoesNotThrow(() -> ps.executeQuery());
             }
         }
-//        catch (DataAccessException | SQLException ex) {
-//            throw new ResponseException("Error: test failed because of the database");
-//        }
     }
 
 
