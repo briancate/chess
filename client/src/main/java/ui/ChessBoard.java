@@ -38,7 +38,7 @@ public class ChessBoard {
     private static final String[] ROW_NUMBERS_BLACK_PERSPECTIVE = {"8", "7", "6", "5", "4", "3", "2", "1"};
 
     // use this to alternate between light and dark squares?
-    private boolean firstSquareInRowIsDark;
+    private boolean nextSquareInRowIsDark;
 
 
 
@@ -48,12 +48,29 @@ public class ChessBoard {
 
         System.out.print(ERASE_SCREEN);
 
-        drawChessBoard("WHITE");
-        drawChessBoard("BLACK");
+        drawHorizontalHeader("WHITE");
+        drawRowOfSquares(true, 8);
+        drawRowOfSquares(false, 7);
+        drawRowOfSquares(true, 6);
+        drawRowOfSquares(false, 5);
+        drawRowOfSquares(true, 4);
+        drawRowOfSquares(false, 3);
+        drawRowOfSquares(true, 2);
+        drawRowOfSquares(false, 1);
+        drawHorizontalHeader("WHITE");
 
-        // these seem unnecessary as well
-        System.out.print(SET_BG_COLOR_BLACK);
-        System.out.print(SET_TEXT_COLOR_WHITE);
+//        drawChessBoard("WHITE");
+//        System.out.println();
+//        drawChessBoard("BLACK");
+
+
+
+//        drawChessBoard("WHITE");
+//        drawChessBoard("BLACK");
+//
+//        // these seem unnecessary as well
+//        System.out.print(SET_BG_COLOR_BLACK);
+//        System.out.print(SET_TEXT_COLOR_WHITE);
     }
 
     public static void drawChessBoard(String teamColor) {
@@ -62,23 +79,28 @@ public class ChessBoard {
         else {drawChessBoardBlack();}
 
         drawHorizontalHeader(teamColor);
-
     }
 
     private static void drawChessBoardWhite() {
         // use a for loop int i = size; i > 0; i-- ?
         // set isDarkSquare to false ?
         drawHorizontalHeader("WHITE");
+        System.out.print(SET_TEXT_COLOR_RED);
         for (int i = BOARD_SIZE_IN_SQUARES; i > 0; i--) {
-            drawRowOfSquares();
+            drawRowOfSquares(true, 1); // CHANGE THIS
         }
 
+        drawHorizontalHeader("WHITE");
     }
 
     private static void drawChessBoardBlack() {
         // use a for loop int i = 0; i < size; i++ ?
         // set isDarkSquare to true ?
-
+        drawHorizontalHeader("BLACK");
+        for (int i = 0; i < BOARD_SIZE_IN_SQUARES; i++) {
+            drawRowOfSquares(true, 1); // CHANGE THIS
+        }
+        drawHorizontalHeader("BLACK");
     }
 
 
@@ -86,20 +108,61 @@ public class ChessBoard {
     public static void drawHorizontalHeader(String teamColor) {
         // this should make the full line of squares with border colors
         // but, I need to find out how to reverse the order of the letters for the board from black's perspective
+        System.out.print(SET_TEXT_COLOR_BLACK);
+        printSquare(" ", "Gray");
+        for (String character : BORDER_ROW_WHITE_PERSPECTIVE) {
+            printSquare(character, "Gray");
+        }
+        printSquare(" ", "Gray");
+
+        printNewLine();
+
     }
 
-    public static void drawRowOfSquares() {
+    public static void drawRowOfSquares(boolean firstSquareIsDark, int rowNumber) {
         // let this take the row string arrays?
         // print a border square with the row number as the text
         // then print out 8 squares, alternating color, with text if a piece is present
         // then print a second border square with the same row number as before
+        System.out.print(SET_TEXT_COLOR_BLACK);
+        printSquare(String.valueOf(rowNumber), "Gray");
+        for (int i = 0; i < BOARD_SIZE_IN_SQUARES; i++) {
+            printSquare(" ", firstSquareIsDark ? "WHITE" : "BLACK");
+            firstSquareIsDark = !firstSquareIsDark;
+        }
+        printSquare(String.valueOf(rowNumber), "Gray");
+
+        printNewLine();
     }
 
-    public static void printSquare(String character) {
-
+    public static void printSquare(String character, String color) {
+        if (color.equals("BLACK")) {setBackgroundDark();}
+        else if (color.equals("WHITE")) {setBackgroundLight();}
+        // it must be the background color
+        else {setBackgroundBorderColor();}
+        System.out.print(" " + character + " ");
     }
 
+    public static void setBackgroundDark() {
+        System.out.print(SET_BG_COLOR_BLACK);
+    }
 
+    public static void setBackgroundLight() {
+        System.out.print(SET_BG_COLOR_WHITE);
+    }
 
-    // have a printBorder method that prints a square of the desired border color and an int
+    public static void setBackgroundBorderColor() {
+        System.out.print(SET_BG_COLOR_LIGHT_GREY);
+    }
+
+    private static void setBlack() {
+        System.out.print(SET_BG_COLOR_BLACK);
+        System.out.print(SET_TEXT_COLOR_BLACK);
+    }
+
+    private static void printNewLine() {
+        setBlack();
+        System.out.println();
+    }
+
 }
