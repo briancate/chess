@@ -1,6 +1,8 @@
 package ui;
 
 import client.ServerFacade;
+import model.RegisterResponse;
+import model.UserData;
 
 import java.util.Scanner;
 
@@ -8,17 +10,19 @@ public class Client {
 
     // this should handle the repl loops
     // and then create request objects to pass to the Server Facade
-    private String visitor;
-    private ServerFacade serverFacade;
+    private String user;
+    private final ServerFacade serverFacade;
     private String authToken;
+    private final Scanner scanner = new Scanner(System.in);
 
-    public Client() {
+
+    public Client(String serverURL) {
         // flesh out the constructor
-//        serverFacade = new ServerFacade();
+        serverFacade = new ServerFacade(serverURL);
     }
 
     static void main() {
-        Client client = new Client();
+        Client client = new Client("localhost:8080"); //idk what url I should be using tbh
         client.run();
     }
 
@@ -26,7 +30,6 @@ public class Client {
         System.out.println("Welcome to Brian's Fantastic 240 Chess Extravaganza!");
         printMenu();
 
-        Scanner scanner = new Scanner(System.in);
         String input = "lol this doesn't matter";
         while (!input.equals("4")) {
 
@@ -34,17 +37,10 @@ public class Client {
             input = scanner.nextLine();
 
             switch (input) {
-                case "1" -> {
-                    System.out.println("This should register you");
-                    authToken = "not an authToken"; // THIS SHOULD BE THE RESULT OF A CLIENT COMMUNICATOR METHOD CALL
-                    loginREPL();
-                }
-                case "2" -> {
-                    System.out.println("This should log you in");
-                    authToken = "not an authToken"; // THIS SHOULD BE THE RESULT OF A CLIENT COMMUNICATOR METHOD CALL
-                    loginREPL();
-                }
+                case "1" -> register();
+                case "2" -> login();
                 case "3" -> help();
+                case "4" -> System.out.println("Thanks for playing!");
                 default -> System.out.println("Your selection must be a number between 1 and 4");
             }
         }
@@ -54,8 +50,6 @@ public class Client {
     public void loginREPL() {
         System.out.println("Login Successful!");
         printMenu();
-
-        Scanner scanner = new Scanner(System.in);
 
         String input = "lol this doesn't matter";
         while (!input.equals("6")) {
@@ -67,10 +61,9 @@ public class Client {
                 case "1" -> System.out.println("This should list all games");
                 case "2" -> System.out.println("This should create a game");
                 case "3" -> System.out.println("This should play a game");
-                case "4" -> System.out.println("This should observe a game");
+                case "4" -> ChessBoard.drawChessBoard("WHITE"); // since for the moment, we can't actually observe a game
                 case "5" -> help();
                 case "6" -> {
-//                    System.out.println("This should log you out");
                     authToken = null;
                     printMenu();
                 }
@@ -118,4 +111,67 @@ public class Client {
                     6. Logout""");
         }
     }
+
+    private void register() {
+        System.out.println("To register, please fill out the following fields:");
+
+        System.out.print("Please enter your username: ");
+        String username = scanner.nextLine();
+        System.out.print("Please enter your password: ");
+        String password = scanner.nextLine();
+        System.out.print("Please enter your email: ");
+        String email = scanner.nextLine();
+
+        UserData userData = new UserData(username, password, email);
+
+        // this should get a response object from the Server Facade, set the authToken and username
+        RegisterResponse response = serverFacade.register(userData);
+
+        if (response == null) {
+            // find a way to give more information here
+            System.out.println("The register request was unsuccessful, please try again");
+        }
+        else {
+            authToken = response.authToken();
+            user = response.username();
+            System.out.println("Successfully logged in as " + user);
+        }
+
+        // start the login loop if the register attempt was successful
+        resolveLoginAttempt();
+    }
+
+    private void login() {
+        System.out.println("To login, please enter your username and password:");
+        System.out.print("Please enter your username: ");
+        String username = scanner.nextLine();
+        System.out.print("Please enter your password: ");
+        String password = scanner.nextLine();
+
+        UserData userData = new UserData(username, password, null);
+
+        RegisterResponse response = serverFacade.login(userData);
+
+        if (response == null) {
+            // find a way to give more information here
+            System.out.println("The login request was unsuccessful, please try again");
+        }
+        else {
+            authToken = response.authToken();
+            user = response.username();
+            System.out.println("Successfully logged in as " + user);
+        }
+
+        // start the login loop if the register attempt was successful
+        resolveLoginAttempt();
+    }
+
+    private void resolveLoginAttempt() {
+        if (authToken == null) {run();}
+        else {loginREPL();}
+    }
+
+    // add methods for each of the other options
+    // register, login, etc
+
 }

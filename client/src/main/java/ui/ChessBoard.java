@@ -40,6 +40,9 @@ public class ChessBoard {
         else {drawChessBoardBlack();}
 
         drawHorizontalBorder(teamColor);
+
+        System.out.print(SET_TEXT_COLOR_WHITE);
+        System.out.print(RESET_BG_COLOR);
     }
 
     private static void drawChessBoardWhite() {
