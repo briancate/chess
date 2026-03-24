@@ -115,43 +115,40 @@ public class Client {
     private void register() {
         System.out.println("To register, please fill out the following fields:");
 
-        System.out.print("Please enter your username: ");
-        String username = scanner.nextLine();
-        System.out.print("Please enter your password: ");
-        String password = scanner.nextLine();
-        System.out.print("Please enter your email: ");
-        String email = scanner.nextLine();
-
-        UserData userData = new UserData(username, password, email);
-
-        // this should get a response object from the Server Facade, set the authToken and username
+        UserData userData = getUserDataFromUser("REGISTER");
         RegisterResponse response = serverFacade.register(userData);
 
-        if (response == null) {
-            // find a way to give more information here
-            System.out.println("The register request was unsuccessful, please try again");
-        }
-        else {
-            authToken = response.authToken();
-            user = response.username();
-            System.out.println("Successfully logged in as " + user);
-        }
-
         // start the login loop if the register attempt was successful
-        resolveLoginAttempt();
+        resolveLoginAttempt(response);
     }
 
     private void login() {
         System.out.println("To login, please enter your username and password:");
+
+        UserData userData = getUserDataFromUser("LOGIN");
+        RegisterResponse response = serverFacade.login(userData);
+
+        // start the login loop if the register attempt was successful
+        resolveLoginAttempt(response);
+    }
+
+    private UserData getUserDataFromUser(String requestType) {
         System.out.print("Please enter your username: ");
         String username = scanner.nextLine();
         System.out.print("Please enter your password: ");
         String password = scanner.nextLine();
 
-        UserData userData = new UserData(username, password, null);
+        String email;
+        if (requestType.equals("REGISTER")) {
+            System.out.print("Please enter your email: ");
+            email = scanner.nextLine();
+        }
+        else {email = null;}
 
-        RegisterResponse response = serverFacade.login(userData);
+        return new UserData(username, password, email);
+    }
 
+    private void resolveLoginAttempt(RegisterResponse response) {
         if (response == null) {
             // find a way to give more information here
             System.out.println("The login request was unsuccessful, please try again");
@@ -162,11 +159,6 @@ public class Client {
             System.out.println("Successfully logged in as " + user);
         }
 
-        // start the login loop if the register attempt was successful
-        resolveLoginAttempt();
-    }
-
-    private void resolveLoginAttempt() {
         if (authToken == null) {run();}
         else {loginREPL();}
     }

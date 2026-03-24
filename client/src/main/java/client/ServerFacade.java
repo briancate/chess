@@ -10,6 +10,7 @@ public class ServerFacade {
 
     public ServerFacade(String url) {
         // should this accept a url?
+        // if it does, the url should have the root and port but not the last part
         serverURL = url;
         clientCommunicator = new ClientCommunicator();
     }
@@ -17,18 +18,17 @@ public class ServerFacade {
     public RegisterResponse register(UserData userData) {
         // maybe to the to and from Json here?
         try {
-            return clientCommunicator.register(userData);
+            return clientCommunicator.login(userData, "/user");
         }
         catch (Exception ex) {
             System.out.println("Register threw an exception: " + ex.getMessage() + " of type " + ex.getClass());
         }
         return null; // BAD IDEA
-        // or do I have a post method, a get method, etc.?
     }
 
     public RegisterResponse login(UserData userData) {
         try {
-            return clientCommunicator.login(userData);
+            return clientCommunicator.login(userData, "/session");
         }
         catch (Exception ex) {
             System.out.println("Register threw an exception: " + ex.getMessage() + " of type " + ex.getClass());
