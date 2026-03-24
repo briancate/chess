@@ -14,6 +14,7 @@ public class Client {
 
     public Client() {
         // flesh out the constructor
+//        serverFacade = new ServerFacade();
     }
 
     static void main() {
@@ -29,24 +30,55 @@ public class Client {
         String input = "lol this doesn't matter";
         while (!input.equals("4")) {
 
+            System.out.println("Please enter a number:");
             input = scanner.nextLine();
 
             switch (input) {
                 case "1" -> {
                     System.out.println("This should register you");
-                    System.out.println("Switching to 2nd REPL...");
+                    authToken = "not an authToken"; // THIS SHOULD BE THE RESULT OF A CLIENT COMMUNICATOR METHOD CALL
+                    loginREPL();
                 }
                 case "2" -> {
                     System.out.println("This should log you in");
-                    System.out.println("Switching to 2nd REPL...");
+                    authToken = "not an authToken"; // THIS SHOULD BE THE RESULT OF A CLIENT COMMUNICATOR METHOD CALL
+                    loginREPL();
                 }
                 case "3" -> help();
-                default -> System.out.println("Please enter a number between 1 and 4");
+                default -> System.out.println("Your selection must be a number between 1 and 4");
             }
         }
     }
 
 
+    public void loginREPL() {
+        System.out.println("Login Successful!");
+        printMenu();
+
+        Scanner scanner = new Scanner(System.in);
+
+        String input = "lol this doesn't matter";
+        while (!input.equals("6")) {
+
+            System.out.println("Please enter a number:");
+            input = scanner.nextLine();
+
+            switch (input) {
+                case "1" -> System.out.println("This should list all games");
+                case "2" -> System.out.println("This should create a game");
+                case "3" -> System.out.println("This should play a game");
+                case "4" -> System.out.println("This should observe a game");
+                case "5" -> help();
+                case "6" -> {
+//                    System.out.println("This should log you out");
+                    authToken = null;
+                    printMenu();
+                }
+                default -> System.out.println("Your selection must be a number between 1 and 6");
+            }
+        }
+
+    }
 
 
     public void help() {
@@ -68,16 +100,13 @@ public class Client {
         }
     }
 
-
     public void printMenu() {
-
         if (authToken == null) {
             System.out.println("""
                     1. Register
                     2. Login
                     3. Help
-                    4. Quit
-                    Please enter a number:""");
+                    4. Quit""");
         }
         else {
             System.out.println("""
@@ -86,10 +115,7 @@ public class Client {
                     3. Play Game
                     4. Observe Game
                     5. Help
-                    6. Logout
-                    Please enter a number:""");
+                    6. Logout""");
         }
-
     }
-
 }
