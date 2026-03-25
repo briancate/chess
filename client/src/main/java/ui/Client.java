@@ -258,17 +258,13 @@ public class Client {
         return gameNumber;
     }
 
-
     private UserData getUserDataFromUser(String requestType) {
-        System.out.print("Please enter your username: ");
-        String username = scanner.nextLine();
-        System.out.print("Please enter your password: ");
-        String password = scanner.nextLine();
+        String username = getNonEmptyString("Please enter your username: ");
+        String password = getNonEmptyString("Please enter your password: ");
 
         String email;
         if (requestType.equals("REGISTER")) {
-            System.out.print("Please enter your email: ");
-            email = scanner.nextLine();
+            email = getNonEmptyString("Please enter your email: ");
         }
         else {email = null;}
 
@@ -289,10 +285,18 @@ public class Client {
         else {loginREPL();}
     }
 
-    // EMPTY STRINGS DON'T THROW ERRORS... should they? Probably?
-    // What if they list the games and then ask to join one?
-    // OBSERVE GAME SHOULD LET THE USER PICK A GAME!!!
+    private String getNonEmptyString(String prompt) {
+        String output = "";
+        int iteration = 0;
+        while (output.isEmpty()) {
+            if (iteration != 0) {System.out.println("Please enter a string with at least one character");}
+            System.out.print(prompt);
+            output = scanner.nextLine();
+            iteration++;
+        }
+        return output;
+    }
+
     // Have "back" options for join game, etc.?
     // Go over error handling again
-
 }

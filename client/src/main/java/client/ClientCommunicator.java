@@ -16,8 +16,8 @@ public class ClientCommunicator {
 
     // this should do all the communication with the actual server
     private final String serverURL;
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
-    private static final Gson gson = new Gson();
+    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+    private static final Gson GSON = new Gson();
 
     public ClientCommunicator(String url) {
         serverURL = url;
@@ -25,7 +25,7 @@ public class ClientCommunicator {
 
     public RegisterResponse login(UserData userData, String path) throws Exception {
         String urlString = "http://" + serverURL + path;
-        String jsonBody = gson.toJson(userData);
+        String jsonBody = GSON.toJson(userData);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(urlString))
@@ -33,10 +33,10 @@ public class ClientCommunicator {
                 .POST(BodyPublishers.ofString(jsonBody))
                 .build();
 
-        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> httpResponse = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
-            return gson.fromJson(httpResponse.body(), RegisterResponse.class);
+            return GSON.fromJson(httpResponse.body(), RegisterResponse.class);
         } else {
             return new RegisterResponse (null, null, errorMessageFromStatusCode(httpResponse.statusCode()));
         }
@@ -52,7 +52,7 @@ public class ClientCommunicator {
                 .DELETE()
                 .build();
 
-        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> httpResponse = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
             return null;
@@ -63,7 +63,7 @@ public class ClientCommunicator {
 
     public CreateResponse createGame(GameData gameData, String authToken) throws Exception {
         String urlString = "http://" + serverURL + "/game";
-        String jsonBody = gson.toJson(gameData);
+        String jsonBody = GSON.toJson(gameData);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(urlString))
@@ -72,11 +72,11 @@ public class ClientCommunicator {
                 .POST(BodyPublishers.ofString(jsonBody))
                 .build();
 
-        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> httpResponse = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
 
         if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
-            return gson.fromJson(httpResponse.body(), CreateResponse.class);
+            return GSON.fromJson(httpResponse.body(), CreateResponse.class);
         } else {
             return new CreateResponse (-1, errorMessageFromStatusCode(httpResponse.statusCode()));
         }
@@ -92,10 +92,10 @@ public class ClientCommunicator {
                 .GET()
                 .build();
 
-        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> httpResponse = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
-            return gson.fromJson(httpResponse.body(), ListGamesResponse.class);
+            return GSON.fromJson(httpResponse.body(), ListGamesResponse.class);
         } else {
             return new ListGamesResponse (null, errorMessageFromStatusCode(httpResponse.statusCode()));
         }
@@ -103,7 +103,7 @@ public class ClientCommunicator {
 
     public JoinResult joinGame(JoinRequest joinRequest) throws Exception {
         String urlString = "http://" + serverURL + "/game";
-        String jsonBody = gson.toJson(joinRequest);
+        String jsonBody = GSON.toJson(joinRequest);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(urlString))
@@ -112,7 +112,7 @@ public class ClientCommunicator {
                 .PUT(BodyPublishers.ofString(jsonBody))
                 .build();
 
-        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> httpResponse = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
             return null;
