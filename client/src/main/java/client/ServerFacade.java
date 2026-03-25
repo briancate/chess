@@ -1,9 +1,6 @@
 package client;
 
-import model.CreateResponse;
-import model.GameData;
-import model.RegisterResponse;
-import model.UserData;
+import model.*;
 
 public class ServerFacade {
 
@@ -45,7 +42,15 @@ public class ServerFacade {
         }
     }
 
-//    public
+    public ListGamesResponse listGames(String authToken) {
+        try {
+            return clientCommunicator.listGames(authToken);
+        }
+        catch (Exception ex) {
+            System.out.println("ListGames threw an exception: " + ex.getMessage() + " of type " + ex.getClass());
+            return new ListGamesResponse(null, ex.getMessage());
+        }
+    }
 
 
 

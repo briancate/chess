@@ -1,18 +1,13 @@
 package ui;
 
 import client.ServerFacade;
-import model.CreateResponse;
-import model.GameData;
-import model.RegisterResponse;
-import model.UserData;
+import model.*;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client {
 
-    // this should handle the repl loops
-    // and then create request objects to pass to the Server Facade
-    private String user;
     private final ServerFacade serverFacade;
     private String authToken;
     private final Scanner scanner = new Scanner(System.in);
@@ -35,7 +30,7 @@ public class Client {
         String input = "lol this doesn't matter";
         while (!input.equals("4")) {
 
-            System.out.println("Please enter a number:");
+            System.out.print("Please enter a number:");
             input = scanner.nextLine();
 
             switch (input) {
@@ -57,11 +52,11 @@ public class Client {
         while (!input.equals("6")) {
 
             printMenu();
-            System.out.println("Please enter a number:");
+            System.out.print("Please enter a number: ");
             input = scanner.nextLine();
 
             switch (input) {
-                case "1" -> System.out.println("This should list all games");
+                case "1" -> listGames();
                 case "2" -> createGame();
                 case "3" -> System.out.println("This should play a game");
                 case "4" -> ChessBoard.drawChessBoard("WHITE"); // since for the moment, we can't actually observe a game
@@ -156,7 +151,22 @@ public class Client {
         // wait this needs me to take care of separating the gameIDs from the numbers I show the user...
         // keep track of gameIDs here
 
-        // do a for loop through the
+        // do a for loop through the ids, use the index to go back and forth
+        ListGamesResponse gamesResponse = serverFacade.listGames(authToken);
+
+        if (gamesResponse.games() == null) {
+            // this is probably unnecessary, I can't imagine how this could fail
+            System.out.println("The list games request failed: " + gamesResponse.message());
+            return;
+        }
+
+        System.out.println("Here is a list of all games you can join:");
+        ArrayList<JsonFriendlyGameData> gamesList = gamesResponse.games();
+        for (int i = 0; i < gamesList.size(); i++) {
+            JsonFriendlyGameData game = gamesList.get(i);
+            System.out.println((i + 1) + ". Name: " + game.gameName() + "\n   White Player: " +
+                    game.whiteUsername() + "\n   Black Player: " + game.blackUsername());
+        }
     }
 
 
@@ -183,16 +193,14 @@ public class Client {
         }
         else {
             authToken = response.authToken();
-            user = response.username();
-            System.out.println("Successfully logged in as " + user);
+            // this should handle the repl loops
+            // and then create request objects to pass to the Server Facade
+            System.out.println("Successfully logged in as " + response.username());
         }
 
         if (authToken == null) {run();}
         else {loginREPL();}
     }
-
-    // add methods for each of the other options
-    // register, login, etc
 
     // EMPTY STRINGS DON'T THROW ERRORS... should they? Probably?
     // Potentially having to quit twice? I only ran into that bug once...

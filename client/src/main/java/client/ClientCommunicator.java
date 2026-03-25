@@ -8,11 +8,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 
 import com.google.gson.Gson;
 
-import model.CreateResponse;
-import model.GameData;
-import model.RegisterResponse;
-import model.UserData;
-
+import model.*;
 
 
 public class ClientCommunicator {
@@ -72,6 +68,26 @@ public class ClientCommunicator {
             System.out.println("Error: received status code " + httpResponse.statusCode());
             return new CreateResponse (-1, errorMessageFromStatusCode(httpResponse.statusCode()));
         }
+    }
+
+    public ListGamesResponse listGames(String authToken) throws Exception {
+        String urlString = "http://" + serverURL + "/game";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(urlString))
+                .timeout(java.time.Duration.ofMillis(5000))
+                .header("authorization", authToken)
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
+            return gson.fromJson(httpResponse.body(), ListGamesResponse.class);
+        } else {
+            System.out.println("Error: received status code " + httpResponse.statusCode());
+            return new ListGamesResponse (null, errorMessageFromStatusCode(httpResponse.statusCode()));
+        }
 
     }
 
@@ -89,8 +105,5 @@ public class ClientCommunicator {
     }
 
 
-    private HttpRequest buildRequest() {
-        return null;
-    }
 
 }
