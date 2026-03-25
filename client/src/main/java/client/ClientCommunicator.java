@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublishers;
 
+import chess.JoinResult;
 import com.google.gson.Gson;
 
 import model.*;
@@ -87,6 +88,27 @@ public class ClientCommunicator {
         } else {
             System.out.println("Error: received status code " + httpResponse.statusCode());
             return new ListGamesResponse (null, errorMessageFromStatusCode(httpResponse.statusCode()));
+        }
+    }
+
+    public JoinResult joinGame(JoinRequest joinRequest) throws Exception {
+        String urlString = "http://" + serverURL + "/game";
+        String jsonBody = gson.toJson(joinRequest);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(urlString))
+                .timeout(java.time.Duration.ofMillis(5000))
+                .header("authorization", joinRequest.authToken())
+                .PUT(BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
+            return null;
+        } else {
+            System.out.println("Error: received status code " + httpResponse.statusCode());
+            return new JoinResult(errorMessageFromStatusCode(httpResponse.statusCode()));
         }
 
     }

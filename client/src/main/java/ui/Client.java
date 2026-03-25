@@ -1,5 +1,6 @@
 package ui;
 
+import chess.JoinResult;
 import client.ServerFacade;
 import model.*;
 
@@ -10,6 +11,7 @@ public class Client {
 
     private final ServerFacade serverFacade;
     private String authToken;
+    private String user;
     private final Scanner scanner = new Scanner(System.in);
 
 
@@ -30,7 +32,7 @@ public class Client {
         String input = "lol this doesn't matter";
         while (!input.equals("4")) {
 
-            System.out.print("Please enter a number:");
+            System.out.print("Please enter a number: ");
             input = scanner.nextLine();
 
             switch (input) {
@@ -45,7 +47,7 @@ public class Client {
 
 
     public void loginREPL() {
-        System.out.println("Login Successful!");
+//        System.out.println("Login Successful!");
 //        printMenu();
 
         String input = "lol this doesn't matter";
@@ -58,7 +60,7 @@ public class Client {
             switch (input) {
                 case "1" -> listGames();
                 case "2" -> createGame();
-                case "3" -> System.out.println("This should play a game");
+                case "3" -> joinGame();
                 case "4" -> ChessBoard.drawChessBoard("WHITE"); // since for the moment, we can't actually observe a game
                 case "5" -> help();
                 case "6" -> {
@@ -147,7 +149,7 @@ public class Client {
         }
     }
 
-    private void listGames() {
+    private ListGamesResponse listGames() {
         // wait this needs me to take care of separating the gameIDs from the numbers I show the user...
         // keep track of gameIDs here
 
@@ -157,7 +159,7 @@ public class Client {
         if (gamesResponse.games() == null) {
             // this is probably unnecessary, I can't imagine how this could fail
             System.out.println("The list games request failed: " + gamesResponse.message());
-            return;
+            return gamesResponse;
         }
 
         System.out.println("Here is a list of all games you can join:");
@@ -167,6 +169,63 @@ public class Client {
             System.out.println((i + 1) + ". Name: " + game.gameName() + "\n   White Player: " +
                     game.whiteUsername() + "\n   Black Player: " + game.blackUsername());
         }
+        System.out.println(); // just to get an extra space in there
+        return gamesResponse;
+    }
+
+    private void joinGame() {
+        // should I list the games just in case ?
+        ListGamesResponse games = listGames();
+        if (games.games().isEmpty()) {
+            System.out.println("Unable to join a game as no game have been created.");
+            return;
+        }
+
+        ArrayList<Integer> validGameNumbers = new ArrayList<>();
+        for (int i = 0; i < games.games().size(); i++) {
+            validGameNumbers.add(i+1);
+        }
+
+        Integer number = getValidGameNumber(validGameNumbers);
+        // make sure -1 won't cause any problems!
+        String teamToJoin = getTeam();
+
+        JoinRequest joinRequest = new JoinRequest(teamToJoin, games.games().get(number - 1).gameID(), authToken);
+
+        JoinResult response =  serverFacade.joinGame(joinRequest);
+        if (response != null) {
+            System.out.println("The join request failed: " + response.message());
+        }
+
+    }
+
+    private String getTeam() {
+        System.out.print("Please enter the team you wish to join: ");
+
+        String input; // = "this doesn't matter and no one will ever see it";
+        while(true) {
+
+            System.out.println("1: White");
+            System.out.println("2: Black");
+            input = scanner.nextLine();
+
+            if (input.equals("1")) {return "WHITE";}
+            else if (input.equals("2")) {return "BLACK";}
+            else {System.out.println("Please enter either the number 1 or the number 2");}
+
+        }
+    }
+
+    private Integer getValidGameNumber(ArrayList<Integer> validNumbers) {
+        boolean gotValidInput = false;
+        Integer gameNumber = -1;
+        while (!gotValidInput) {
+            if (gameNumber != -1) {System.out.print("Invalid number, please enter the number of one of the games listed. ");}
+            else {System.out.print("Please enter the number of the game you wish to join: ");}
+            gameNumber = Integer.valueOf(scanner.nextLine());
+            if (validNumbers.contains(gameNumber)) {gotValidInput = true;}
+        }
+        return gameNumber;
     }
 
 
@@ -195,7 +254,8 @@ public class Client {
             authToken = response.authToken();
             // this should handle the repl loops
             // and then create request objects to pass to the Server Facade
-            System.out.println("Successfully logged in as " + response.username());
+            user = response.username();
+            System.out.println("\nSuccessfully logged in as " + user + "!\n");
         }
 
         if (authToken == null) {run();}
@@ -204,5 +264,6 @@ public class Client {
 
     // EMPTY STRINGS DON'T THROW ERRORS... should they? Probably?
     // Potentially having to quit twice? I only ran into that bug once...
+    // What if they list the games and then ask to join one?
 
 }

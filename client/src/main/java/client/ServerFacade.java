@@ -1,5 +1,6 @@
 package client;
 
+import chess.JoinResult;
 import model.*;
 
 public class ServerFacade {
@@ -49,6 +50,17 @@ public class ServerFacade {
         catch (Exception ex) {
             System.out.println("ListGames threw an exception: " + ex.getMessage() + " of type " + ex.getClass());
             return new ListGamesResponse(null, ex.getMessage());
+        }
+    }
+
+    public JoinResult joinGame(JoinRequest joinRequest) {
+        // this doesn't have a response body, so I guess it's chill?
+        try {
+            return clientCommunicator.joinGame(joinRequest);
+        }
+        catch (Exception ex) {
+            System.out.println("JoinGame threw an exception: " + ex.getMessage() + " of type " + ex.getClass());
+            return new JoinResult(ex.getMessage());
         }
     }
 
