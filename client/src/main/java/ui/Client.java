@@ -15,12 +15,12 @@ public class Client {
     private final Scanner scanner = new Scanner(System.in);
 
 
-    public Client(String serverURL) {
-        serverFacade = new ServerFacade(serverURL);
+    public Client(int port) {
+        serverFacade = new ServerFacade(port);
     }
 
     static void main() {
-        Client client = new Client("localhost:8080"); // I think this is right?
+        Client client = new Client(8080); // I think this is right?
         client.run();
     }
 
@@ -299,4 +299,5 @@ public class Client {
 
     // Have "back" options for join game, etc.?
     // Go over error handling again
+    // Should there be a clear method here? Frankly I don't want the user to be able to clear my database...
 }

@@ -121,6 +121,18 @@ public class ClientCommunicator {
         }
     }
 
+    public void clear() throws Exception {
+        String urlString = "http://" + serverURL + "/db";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(urlString))
+                .timeout(java.time.Duration.ofMillis(5000))
+                .DELETE()
+                .build();
+
+        HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     private String errorMessageFromStatusCode(int statusCode) {
         if (statusCode == 400) {return "bad request";}
         if (statusCode == 401) {return "unauthorized";}

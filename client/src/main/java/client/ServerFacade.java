@@ -7,10 +7,14 @@ public class ServerFacade {
 
     private final ClientCommunicator clientCommunicator;
 
-    public ServerFacade(String url) {
+    public ServerFacade(int port) {
         // should this accept a url?
         // if it does, the url should have the root and port but not the last part
-        clientCommunicator = new ClientCommunicator(url);
+        clientCommunicator = new ClientCommunicator("localhost:" + port);
+    }
+
+    public ClientCommunicator getClientCommunicator() {
+        return clientCommunicator;
     }
 
     public RegisterResponse register(UserData userData) {
@@ -73,8 +77,4 @@ public class ServerFacade {
             return new JoinResult(ex.getMessage());
         }
     }
-
-
-
-
 }
