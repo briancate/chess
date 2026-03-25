@@ -1,6 +1,8 @@
 package ui;
 
 import client.ServerFacade;
+import model.CreateResponse;
+import model.GameData;
 import model.RegisterResponse;
 import model.UserData;
 
@@ -49,17 +51,18 @@ public class Client {
 
     public void loginREPL() {
         System.out.println("Login Successful!");
-        printMenu();
+//        printMenu();
 
         String input = "lol this doesn't matter";
         while (!input.equals("6")) {
 
+            printMenu();
             System.out.println("Please enter a number:");
             input = scanner.nextLine();
 
             switch (input) {
                 case "1" -> System.out.println("This should list all games");
-                case "2" -> System.out.println("This should create a game");
+                case "2" -> createGame();
                 case "3" -> System.out.println("This should play a game");
                 case "4" -> ChessBoard.drawChessBoard("WHITE"); // since for the moment, we can't actually observe a game
                 case "5" -> help();
@@ -132,6 +135,31 @@ public class Client {
         resolveLoginAttempt(response);
     }
 
+
+    private void createGame() {
+        System.out.print("Please enter a name for the game you wish to create: ");
+        String gameName = scanner.nextLine();
+
+        GameData gameData = new GameData(0, null, null, gameName, null);
+
+        CreateResponse response = serverFacade.createGame(gameData, authToken);
+
+        if (response.message() != null) {
+            System.out.println("The create request failed: " + response.message());
+        }
+        else {
+            System.out.println("Successfully created game with name " + gameData.gameName());
+        }
+    }
+
+    private void listGames() {
+        // wait this needs me to take care of separating the gameIDs from the numbers I show the user...
+        // keep track of gameIDs here
+
+        // do a for loop through the
+    }
+
+
     private UserData getUserDataFromUser(String requestType) {
         System.out.print("Please enter your username: ");
         String username = scanner.nextLine();
@@ -149,9 +177,9 @@ public class Client {
     }
 
     private void resolveLoginAttempt(RegisterResponse response) {
-        if (response == null) {
+        if (response.message() != null) {
             // find a way to give more information here
-            System.out.println("The login request was unsuccessful, please try again");
+            System.out.println("The login request failed: " + response.message());
         }
         else {
             authToken = response.authToken();
@@ -165,5 +193,8 @@ public class Client {
 
     // add methods for each of the other options
     // register, login, etc
+
+    // EMPTY STRINGS DON'T THROW ERRORS... should they? Probably?
+    // Potentially having to quit twice? I only ran into that bug once...
 
 }
