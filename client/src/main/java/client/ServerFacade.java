@@ -1,6 +1,6 @@
 package client;
 
-import chess.JoinResult;
+import model.JoinResult;
 import model.*;
 
 public class ServerFacade {
@@ -30,6 +30,16 @@ public class ServerFacade {
         catch (Exception ex) {
             System.out.println("Login threw an exception: " + ex.getMessage() + " of type " + ex.getClass());
             return new RegisterResponse(null, null, ex.getMessage());
+        }
+    }
+
+    public LogoutResponse logout(String authToken) {
+        try {
+            return clientCommunicator.logout(authToken);
+        }
+        catch (Exception ex) {
+            System.out.println("Logout threw an exception: " + ex.getMessage() + " of type " + ex.getClass());
+            return new LogoutResponse(ex.getMessage());
         }
     }
 

@@ -1,8 +1,9 @@
 package ui;
 
-import chess.JoinResult;
+import model.JoinResult;
 import client.ServerFacade;
 import model.*;
+import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -11,7 +12,6 @@ public class Client {
 
     private final ServerFacade serverFacade;
     private String authToken;
-    private String user;
     private final Scanner scanner = new Scanner(System.in);
 
 
@@ -26,6 +26,7 @@ public class Client {
     }
 
     public void run() {
+        System.out.print(SET_TEXT_COLOR_WHITE);
         System.out.println("Welcome to Brian's Fantastic 240 Chess Extravaganza!");
         printMenu();
 
@@ -34,6 +35,7 @@ public class Client {
 
             System.out.print("Please enter a number: ");
             input = scanner.nextLine();
+            System.out.println();
 
             switch (input) {
                 case "1" -> register();
@@ -56,6 +58,7 @@ public class Client {
             printMenu();
             System.out.print("Please enter a number: ");
             input = scanner.nextLine();
+            System.out.println();
 
             switch (input) {
                 case "1" -> listGames();
@@ -64,6 +67,7 @@ public class Client {
                 case "4" -> ChessBoard.drawChessBoard("WHITE"); // since for the moment, we can't actually observe a game
                 case "5" -> help();
                 case "6" -> {
+                    logout();
                     authToken = null;
                     printMenu();
                 }
@@ -132,6 +136,15 @@ public class Client {
         resolveLoginAttempt(response);
     }
 
+    private void logout() {
+
+        LogoutResponse response = serverFacade.logout(authToken);
+
+        if (response == null) {System.out.println("Successfully logged out\n");}
+        else {System.out.println("Logout request failed: " + response.message());}
+
+    }
+
 
     private void createGame() {
         System.out.print("Please enter a name for the game you wish to create: ");
@@ -166,8 +179,9 @@ public class Client {
         ArrayList<JsonFriendlyGameData> gamesList = gamesResponse.games();
         for (int i = 0; i < gamesList.size(); i++) {
             JsonFriendlyGameData game = gamesList.get(i);
-            System.out.println((i + 1) + ". Name: " + game.gameName() + "\n   White Player: " +
-                    game.whiteUsername() + "\n   Black Player: " + game.blackUsername());
+            System.out.println((i + 1) + ". Name: " + game.gameName() +
+                    "\n   White Player: " + ((game.whiteUsername() == null) ? "unclaimed" : game.whiteUsername()) +
+                    "\n   Black Player: " + ((game.blackUsername() == null) ? "unclaimed" : game.blackUsername()));
         }
         System.out.println(); // just to get an extra space in there
         return gamesResponse;
@@ -197,10 +211,13 @@ public class Client {
             System.out.println("The join request failed: " + response.message());
         }
 
+        if (teamToJoin.equals("WHITE")) {ChessBoard.drawChessBoard("WHITE");}
+        else {ChessBoard.drawChessBoard("BLACK");}
     }
 
+
     private String getTeam() {
-        System.out.print("Please enter the team you wish to join: ");
+        System.out.println("Please enter the team you wish to join:");
 
         String input; // = "this doesn't matter and no one will ever see it";
         while(true) {
@@ -252,10 +269,7 @@ public class Client {
         }
         else {
             authToken = response.authToken();
-            // this should handle the repl loops
-            // and then create request objects to pass to the Server Facade
-            user = response.username();
-            System.out.println("\nSuccessfully logged in as " + user + "!\n");
+            System.out.println("Successfully logged in as " + response.username() + "!\n");
         }
 
         if (authToken == null) {run();}
@@ -265,5 +279,9 @@ public class Client {
     // EMPTY STRINGS DON'T THROW ERRORS... should they? Probably?
     // Potentially having to quit twice? I only ran into that bug once...
     // What if they list the games and then ask to join one?
+    // Games shouldn't print out null for usernames, it should be "unclaimed" maybe
+    // OBSERVE GAME SHOULD LET THE USER PICK A GAME!!!
+    // Have "back" options for join game, etc.?
+    // Go over error handling again
 
 }
