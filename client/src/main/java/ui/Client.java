@@ -154,7 +154,7 @@ public class Client {
         // for the moment, just print out a chessboard
         // eventually though, I'll need to get the ChessGame to print it out
         System.out.println();
-        ChessBoard.drawChessBoard("WHITE");
+        ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard());
         System.out.println();
     }
 
@@ -220,9 +220,10 @@ public class Client {
             return;
         }
 
+        // EVENTUALLY THIS WILL NEED TO ACTUALLY GET THE CHESSGAME OBJECT FROM THE DATABASE
         System.out.println();
-        if (teamToJoin.equals("WHITE")) {ChessBoard.drawChessBoard("WHITE");}
-        else {ChessBoard.drawChessBoard("BLACK");}
+        if (teamToJoin.equals("WHITE")) {ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard());}
+        else {ChessBoard.drawChessBoard("BLACK", new chess.ChessBoard());}
         System.out.println();
     }
 

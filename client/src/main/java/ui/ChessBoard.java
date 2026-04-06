@@ -28,16 +28,16 @@ public class ChessBoard {
     static void main() {
         System.out.print(ERASE_SCREEN);
 
-        drawChessBoard("WHITE");
+        drawChessBoard("WHITE", new chess.ChessBoard());
         System.out.println();
-        drawChessBoard("BLACK");
+        drawChessBoard("BLACK", new chess.ChessBoard());
     }
 
-    public static void drawChessBoard(String teamColor) {
+    public static void drawChessBoard(String teamColor, chess.ChessBoard board) {
         drawHorizontalBorder(teamColor);
 
-        if (teamColor.equals("WHITE")) {drawChessBoardWhite();}
-        else {drawChessBoardBlack();}
+        if (teamColor.equals("WHITE")) {drawChessBoardWhite(board);}
+        else {drawChessBoardBlack(board);}
 
         drawHorizontalBorder(teamColor);
 
@@ -45,45 +45,43 @@ public class ChessBoard {
         System.out.print(RESET_BG_COLOR);
     }
 
-    private static void drawChessBoardWhite() {
-        boolean rowStartsWithLight = true;
-        for (int i = BOARD_SIZE_IN_SQUARES; i > 0; i--) {
-            drawRowOfSquares(rowStartsWithLight, i, "WHITE");
-            rowStartsWithLight = !rowStartsWithLight;
-        }
-    }
-
-    private static void drawChessBoardBlack() {
-        boolean rowStartsWithLight = true;
-        for (int i = 1; i <= BOARD_SIZE_IN_SQUARES; i++) {
-            drawRowOfSquares(rowStartsWithLight, i, "BLACK"); // CHANGE THIS
-            rowStartsWithLight = !rowStartsWithLight;
-        }
-    }
-
     public static void drawHorizontalBorder(String teamColor) {
-        System.out.print(SET_TEXT_COLOR_BLACK);
-        printSquare(" ", "Gray");
-
+        printSquare(" ", "GRAY", "BLACK");
         if (teamColor.equals("WHITE")) {
             for (String character : BORDER_ROW_WHITE_PERSPECTIVE) {
-                printSquare(character, "Gray");
+                printSquare(character, "GRAY", "BLACK");
             }
         }
         else {
             for (String character : BORDER_ROW_BLACK_PERSPECTIVE) {
-                printSquare(character, "Gray");
+                printSquare(character, "GRAY", "BLACK");
             }
         }
-
-        printSquare(" ", "Gray");
+        printSquare(" ", "GRAY","BLACK");
 
         printNewLine();
     }
 
-    public static void drawRowOfSquares(boolean firstSquareIsDark, int rowNumber, String teamColor) {
-        printBorderSquare(String.valueOf(rowNumber));
+    private static void drawChessBoardWhite(chess.ChessBoard board) {
+        boolean rowStartsWithLight = true;
+        for (int i = BOARD_SIZE_IN_SQUARES; i > 0; i--) {
+            drawRowOfSquares(rowStartsWithLight, i, "WHITE", board);
+            rowStartsWithLight = !rowStartsWithLight;
+        }
+    }
 
+    private static void drawChessBoardBlack(chess.ChessBoard board) {
+        boolean rowStartsWithLight = true;
+        for (int i = 1; i <= BOARD_SIZE_IN_SQUARES; i++) {
+            drawRowOfSquares(rowStartsWithLight, i, "BLACK", board);
+            rowStartsWithLight = !rowStartsWithLight;
+        }
+    }
+
+    public static void drawRowOfSquares(boolean firstSquareIsDark, int rowNumber, String teamColor, chess.ChessBoard board) {
+        printSquare(String.valueOf(rowNumber), "GRAY", "BLACK");
+
+        // THIS WON'T WORK, COLOR NEEDS TO COME FROM PIECE COLOR
         if (rowNumber == 1 || rowNumber == 2) {System.out.print(SET_TEXT_COLOR_RED);}
         else if (rowNumber == 7 || rowNumber == 8) {System.out.print(SET_TEXT_COLOR_BLUE);}
 
@@ -98,26 +96,29 @@ public class ChessBoard {
             else {character = " ";}
 
 
-            printSquare(character, firstSquareIsDark ? "WHITE" : "BLACK");
+            printSquare(character, firstSquareIsDark ? "WHITE" : "BLACK", "white?"); // UPDATE THIS
             firstSquareIsDark = !firstSquareIsDark;
         }
 
-        printBorderSquare(String.valueOf(rowNumber));
+        printSquare(String.valueOf(rowNumber), "GRAY", "BLACK");
 
         printNewLine();
     }
 
-    public static void printSquare(String character, String color) {
-        if (color.equals("BLACK")) {setBackgroundDark();}
-        else if (color.equals("WHITE")) {setBackgroundLight();}
-        // it must be the background color
-        else {setBackgroundBorderColor();}
+    public static void printSquare(String character, String squareColor, String textColor) {
+        // set the background color
+        switch (squareColor) {
+            case "BLACK" -> setBackgroundDark();
+            case "WHITE" -> setBackgroundLight();
+            case "GRAY" -> setBackgroundBorderColor();
+        }
+        // set the text color
+        switch (textColor) {
+            case "BLACK" -> System.out.print(SET_TEXT_COLOR_BLACK);
+            case "BLUE" -> System.out.print(SET_TEXT_COLOR_BLUE);
+            case "RED" -> System.out.print(SET_TEXT_COLOR_RED);
+        }
         System.out.print(" " + character + " ");
-    }
-
-    public static void printBorderSquare(String rowNumber) {
-        System.out.print(SET_TEXT_COLOR_BLACK);
-        printSquare(rowNumber, "Gray");
     }
 
     public static void setBackgroundDark() {
