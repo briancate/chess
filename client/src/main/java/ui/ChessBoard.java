@@ -132,13 +132,8 @@ public class ChessBoard {
         System.out.print(SET_BG_COLOR_LIGHT_GREY);
     }
 
-    private static void setBlack() {
-        System.out.print(SET_BG_COLOR_BLACK);
-        System.out.print(SET_TEXT_COLOR_BLACK);
-    }
-
     private static void printNewLine() {
-        setBlack();
+        System.out.print(RESET_BG_COLOR);
         System.out.println();
     }
 }

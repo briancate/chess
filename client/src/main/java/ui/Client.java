@@ -153,7 +153,9 @@ public class Client {
 
         // for the moment, just print out a chessboard
         // eventually though, I'll need to get the ChessGame to print it out
+        System.out.println();
         ChessBoard.drawChessBoard("WHITE");
+        System.out.println();
     }
 
     private void createGame() {
@@ -198,7 +200,7 @@ public class Client {
         // I'm going to list the games again just in case they added one since last listing them
         ListGamesResponse games = listGames();
         if (games.games().isEmpty()) {
-            System.out.println("Unable to join a game as no game have been created.");
+            System.out.println("Unable to join a game as no games have been created.");
             return;
         }
 
@@ -218,9 +220,10 @@ public class Client {
             return;
         }
 
-
+        System.out.println();
         if (teamToJoin.equals("WHITE")) {ChessBoard.drawChessBoard("WHITE");}
         else {ChessBoard.drawChessBoard("BLACK");}
+        System.out.println();
     }
 
 
@@ -281,8 +284,7 @@ public class Client {
             System.out.println("Successfully logged in as " + response.username() + "!\n");
         }
 
-        if (authToken == null) {run();}
-        else {loginREPL();}
+        if (authToken != null) {loginREPL();}
     }
 
     private String getNonEmptyString(String prompt) {
@@ -299,5 +301,5 @@ public class Client {
 
     // Have "back" options for join game, etc.?
     // Go over error handling again
-    // Should there be a clear method here? Frankly I don't want the user to be able to clear my database...
+    // Should play or observe stop the repl loop?
 }
