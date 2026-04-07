@@ -1,5 +1,9 @@
 package ui;
 
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
+
 import static ui.EscapeSequences.*;
 
 public class ChessBoard {
@@ -15,10 +19,7 @@ public class ChessBoard {
     private static final String BISHOP = "B";
     private static final String QUEEN = "Q";
     private static final String KING = "K";
-
-    // for each row, excluding border
-    private static final String[] ROW_ONE_OR_EIGHT_WHITE_PERSPECTIVE = {ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK};
-    private static final String[] ROW_ONE_OR_EIGHT_BLACK_PERSPECTIVE = {ROOK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROOK};
+    private static final String PAWN = "P";
 
     // for the borders, horizontal and vertical
     private static final String[] BORDER_ROW_WHITE_PERSPECTIVE = {"a", "b", "c", "d", "e", "f", "g", "h"};
@@ -28,9 +29,12 @@ public class ChessBoard {
     static void main() {
         System.out.print(ERASE_SCREEN);
 
-        drawChessBoard("WHITE", new chess.ChessBoard());
+        ChessGame game = new ChessGame();
+        game.getBoard().resetBoard();
+
+        drawChessBoard("WHITE", game.getBoard());
         System.out.println();
-        drawChessBoard("BLACK", new chess.ChessBoard());
+        drawChessBoard("BLACK", game.getBoard());
     }
 
     public static void drawChessBoard(String teamColor, chess.ChessBoard board) {
@@ -81,28 +85,58 @@ public class ChessBoard {
     public static void drawRowOfSquares(boolean firstSquareIsDark, int rowNumber, String teamColor, chess.ChessBoard board) {
         printSquare(String.valueOf(rowNumber), "GRAY", "BLACK");
 
-        // THIS WON'T WORK, COLOR NEEDS TO COME FROM PIECE COLOR
-        if (rowNumber == 1 || rowNumber == 2) {System.out.print(SET_TEXT_COLOR_RED);}
-        else if (rowNumber == 7 || rowNumber == 8) {System.out.print(SET_TEXT_COLOR_BLUE);}
-
-        for (int i = 0; i < BOARD_SIZE_IN_SQUARES; i++) {
-
+        for (int i = 1; i <= BOARD_SIZE_IN_SQUARES; i++) {
             String character;
-            if (rowNumber == 2 || rowNumber == 7) {character = "P";}
-            else if (rowNumber == 1 || rowNumber == 8) {
-                if (teamColor.equals("WHITE")) {character = ROW_ONE_OR_EIGHT_WHITE_PERSPECTIVE[i];}
-                else {character = ROW_ONE_OR_EIGHT_BLACK_PERSPECTIVE[i];}
+            String pieceColor;
+
+            int colNumber;
+            if (teamColor.equals("WHITE")) {colNumber = i;}
+            else {colNumber = BOARD_SIZE_IN_SQUARES + 1 - i;}
+
+            chess.ChessPiece piece = board.getPiece(new ChessPosition(rowNumber, colNumber));
+            if (piece == null) {
+                character = " ";
+                pieceColor = "BLACK"; // the text color shouldn't matter because we're printing a space
             }
-            else {character = " ";}
+            else {
+                character = getCharacterFromPieceType(piece);
+                pieceColor = getPieceColorFromPiece(piece);
+            }
 
-
-            printSquare(character, firstSquareIsDark ? "WHITE" : "BLACK", "white?"); // UPDATE THIS
+            String squareColor = firstSquareIsDark ? "WHITE" : "BLACK";
+            printSquare(character, squareColor, pieceColor);
             firstSquareIsDark = !firstSquareIsDark;
         }
-
         printSquare(String.valueOf(rowNumber), "GRAY", "BLACK");
 
         printNewLine();
+    }
+
+
+    private static String getCharacterFromPieceType(ChessPiece piece) {
+        String character;
+        ChessPiece.PieceType type = piece.getPieceType();
+        switch (type) {
+            case KING -> character = KING;
+            case QUEEN -> character = QUEEN;
+            case BISHOP -> character = BISHOP;
+            case KNIGHT -> character = KNIGHT;
+            case ROOK -> character = ROOK;
+            case PAWN -> character = PAWN;
+            default -> character = " "; // shouldn't be necessary, but the IDE wants it
+        }
+        return character;
+    }
+
+    private static String getPieceColorFromPiece(ChessPiece piece) {
+        String pieceColor;
+        ChessGame.TeamColor pieceTeamColor = piece.getTeamColor();
+        switch (pieceTeamColor) {
+            case WHITE -> pieceColor = "RED";
+            case BLACK -> pieceColor = "BLUE";
+            default -> pieceColor = "BLACK"; // shouldn't ever be used but my IDE complains if I don't have a default
+        }
+        return pieceColor;
     }
 
     public static void printSquare(String character, String squareColor, String textColor) {
