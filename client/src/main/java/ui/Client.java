@@ -137,27 +137,6 @@ public class Client {
 
     }
 
-    private void observeGame() {
-        ListGamesResponse games = listGames();
-        if (games.games().isEmpty()) {
-            System.out.println("Unable to observe a game as no game have been created.");
-            return;
-        }
-
-        ArrayList<Integer> validGameNumbers = new ArrayList<>();
-        for (int i = 0; i < games.games().size(); i++) {
-            validGameNumbers.add(i+1);
-        }
-
-        getValidGameNumber(validGameNumbers);
-
-        // for the moment, just print out a chessboard
-        // eventually though, I'll need to get the ChessGame to print it out
-        System.out.println();
-        ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard());
-        System.out.println();
-    }
-
     private void createGame() {
         System.out.print("Please enter a name for the game you wish to create: ");
         String gameName = scanner.nextLine();
@@ -220,13 +199,42 @@ public class Client {
             return;
         }
 
+        // of that was just to call the server endpoint
+        // then call the server's /ws endpoint
+        // send a connect ws message
+        // transition to gameplay UI
+
         // EVENTUALLY THIS WILL NEED TO ACTUALLY GET THE CHESSGAME OBJECT FROM THE DATABASE
         System.out.println();
-        if (teamToJoin.equals("WHITE")) {ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard());}
-        else {ChessBoard.drawChessBoard("BLACK", new chess.ChessBoard());}
+        if (teamToJoin.equals("WHITE")) {ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);}
+        else {ChessBoard.drawChessBoard("BLACK", new chess.ChessBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);}
         System.out.println();
     }
 
+    private void observeGame() {
+        ListGamesResponse games = listGames();
+        if (games.games().isEmpty()) {
+            System.out.println("Unable to observe a game as no game have been created.");
+            return;
+        }
+
+        ArrayList<Integer> validGameNumbers = new ArrayList<>();
+        for (int i = 0; i < games.games().size(); i++) {
+            validGameNumbers.add(i+1);
+        }
+
+        getValidGameNumber(validGameNumbers);
+
+        // then call the server's /ws endpoint
+        // send a connect ws message
+        // transition to gameplay UI
+
+        // for the moment, just print out a chessboard
+        // eventually though, I'll need to get the ChessGame to print it out
+        System.out.println();
+        ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
+        System.out.println();
+    }
 
     private String getTeam() {
         System.out.println("Please enter the team you wish to join:");

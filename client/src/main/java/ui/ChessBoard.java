@@ -1,8 +1,9 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
@@ -25,23 +26,66 @@ public class ChessBoard {
     private static final String[] BORDER_ROW_WHITE_PERSPECTIVE = {"a", "b", "c", "d", "e", "f", "g", "h"};
     private static final String[] BORDER_ROW_BLACK_PERSPECTIVE = {"h", "g", "f", "e", "d", "c", "b", "a"};
 
+    public static final boolean [][] EMPTY_BOOLEAN_BOARD = generateEmptyBooleanBoard();
+
+    static boolean [][] generateEmptyBooleanBoard() {
+        boolean[][] array = new boolean[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                array[i][j] = false;
+            }
+        }
+        return array;
+    }
+
 
     static void main() {
         System.out.print(ERASE_SCREEN);
 
         ChessGame game = new ChessGame();
         game.getBoard().resetBoard();
+        try {
+            game.makeMove(new ChessMove(new ChessPosition(2, 2), new ChessPosition(4, 2), null));
+            game.makeMove(new ChessMove(new ChessPosition(7, 3), new ChessPosition(5, 3), null));
+            game.makeMove(new ChessMove(new ChessPosition(1, 7), new ChessPosition(3, 6), null));
+            game.makeMove(new ChessMove(new ChessPosition(7, 4), new ChessPosition(6, 4), null));
+        }
+        catch (InvalidMoveException ex) {
+            // this would actually happen in the server I think
+            throw new RuntimeException(ex.getMessage());
+        }
 
-        drawChessBoard("WHITE", game.getBoard());
+        boolean [][] highlightedSquares = EMPTY_BOOLEAN_BOARD;
+        // find all valid end positions from the piece's valid moves
+        Collection<ChessMove> moves = game.validMoves(new ChessPosition(3, 6));
+        Collection<ChessPosition> positions = new ArrayList<>();
+        for (ChessMove move : moves) {
+            System.out.println(move.toString());
+            positions.add(move.getEndPosition());
+        }
+
+        for (ChessPosition position : chess.ChessBoard.ALL_POSITIONS) {
+            if (positions.contains(position)) {
+                highlightedSquares[position.getRow()-1][position.getColumn()-1] = true;
+            }
+        }
+
+        drawChessBoard("WHITE", game.getBoard(), highlightedSquares);
         System.out.println();
-        drawChessBoard("BLACK", game.getBoard());
+        drawChessBoard("BLACK", game.getBoard(), EMPTY_BOOLEAN_BOARD);
     }
 
-    public static void drawChessBoard(String teamColor, chess.ChessBoard board) {
+    public static void drawChessBoard(String teamColor, chess.ChessBoard board, boolean [][] squaresToHighlight) {
+        // Notes from Dr. Wilkerson:
+        // pass in as a parameter a 2d array of booleans representing valid positions (for highlighting)
+        // at the print square level, check that
+        // I assume that means that when you get the ChessPosition to highlight from the user
+        // you instantly get the valid moves (and only save the endpoints of said moves
+
         drawHorizontalBorder(teamColor);
 
-        if (teamColor.equals("WHITE")) {drawChessBoardWhite(board);}
-        else {drawChessBoardBlack(board);}
+        if (teamColor.equals("WHITE")) {drawChessBoardWhite(board, squaresToHighlight);}
+        else {drawChessBoardBlack(board, squaresToHighlight);}
 
         drawHorizontalBorder(teamColor);
 
@@ -50,40 +94,41 @@ public class ChessBoard {
     }
 
     public static void drawHorizontalBorder(String teamColor) {
-        printSquare(" ", "GRAY", "BLACK");
+        printSquare(" ", "GRAY", "BLACK", false);
         if (teamColor.equals("WHITE")) {
             for (String character : BORDER_ROW_WHITE_PERSPECTIVE) {
-                printSquare(character, "GRAY", "BLACK");
+                printSquare(character, "GRAY", "BLACK", false);
             }
         }
         else {
             for (String character : BORDER_ROW_BLACK_PERSPECTIVE) {
-                printSquare(character, "GRAY", "BLACK");
+                printSquare(character, "GRAY", "BLACK", false);
             }
         }
-        printSquare(" ", "GRAY","BLACK");
+        printSquare(" ", "GRAY","BLACK", false);
 
         printNewLine();
     }
 
-    private static void drawChessBoardWhite(chess.ChessBoard board) {
+    private static void drawChessBoardWhite(chess.ChessBoard board, boolean [][] squaresToHighlight) {
         boolean rowStartsWithLight = true;
         for (int i = BOARD_SIZE_IN_SQUARES; i > 0; i--) {
-            drawRowOfSquares(rowStartsWithLight, i, "WHITE", board);
+            drawRowOfSquares(rowStartsWithLight, i, "WHITE", board, squaresToHighlight);
             rowStartsWithLight = !rowStartsWithLight;
         }
     }
 
-    private static void drawChessBoardBlack(chess.ChessBoard board) {
+    private static void drawChessBoardBlack(chess.ChessBoard board, boolean [][] squaresToHighlight) {
         boolean rowStartsWithLight = true;
         for (int i = 1; i <= BOARD_SIZE_IN_SQUARES; i++) {
-            drawRowOfSquares(rowStartsWithLight, i, "BLACK", board);
+            drawRowOfSquares(rowStartsWithLight, i, "BLACK", board, squaresToHighlight);
             rowStartsWithLight = !rowStartsWithLight;
         }
     }
 
-    public static void drawRowOfSquares(boolean firstSquareIsDark, int rowNumber, String teamColor, chess.ChessBoard board) {
-        printSquare(String.valueOf(rowNumber), "GRAY", "BLACK");
+    public static void drawRowOfSquares(boolean firstSquareIsDark, int rowNumber, String teamColor, chess.ChessBoard board,
+                                        boolean [][] squaresToHighlight) {
+        printSquare(String.valueOf(rowNumber), "GRAY", "BLACK", false);
 
         for (int i = 1; i <= BOARD_SIZE_IN_SQUARES; i++) {
             String character;
@@ -103,11 +148,14 @@ public class ChessBoard {
                 pieceColor = getPieceColorFromPiece(piece);
             }
 
+            boolean isHighlighted = squaresToHighlight[rowNumber-1][colNumber-1];
+//            if (isHighlighted) {System.out.println("Row number: " + rowNumber + " Col number: " + colNumber);}
+
             String squareColor = firstSquareIsDark ? "WHITE" : "BLACK";
-            printSquare(character, squareColor, pieceColor);
+            printSquare(character, squareColor, pieceColor, isHighlighted);
             firstSquareIsDark = !firstSquareIsDark;
         }
-        printSquare(String.valueOf(rowNumber), "GRAY", "BLACK");
+        printSquare(String.valueOf(rowNumber), "GRAY", "BLACK", false);
 
         printNewLine();
     }
@@ -139,20 +187,35 @@ public class ChessBoard {
         return pieceColor;
     }
 
-    public static void printSquare(String character, String squareColor, String textColor) {
-        // set the background color
-        switch (squareColor) {
-            case "BLACK" -> setBackgroundDark();
-            case "WHITE" -> setBackgroundLight();
-            case "GRAY" -> setBackgroundBorderColor();
-        }
+    public static void printSquare(String character, String squareColor, String textColor, boolean isHighlighted) {
         // set the text color
         switch (textColor) {
             case "BLACK" -> System.out.print(SET_TEXT_COLOR_BLACK);
             case "BLUE" -> System.out.print(SET_TEXT_COLOR_BLUE);
             case "RED" -> System.out.print(SET_TEXT_COLOR_RED);
         }
+
+        // set the background color
+        if (squareColor.equals("BLACK")) {
+            if (isHighlighted) {setBackgroundHighlightedDark();}
+            else {setBackgroundDark();}
+        }
+        else if (squareColor.equals("WHITE")) {
+            if (isHighlighted) {setBackgroundHighlightedLight();}
+            else {setBackgroundLight();}
+        }
+        else {
+            setBackgroundBorderColor();
+        }
         System.out.print(" " + character + " ");
+    }
+
+    public static void setBackgroundHighlightedDark() {
+        System.out.print(SET_BG_COLOR_DARK_GREEN);
+    }
+
+    public static void setBackgroundHighlightedLight() {
+        System.out.print(SET_BG_COLOR_GREEN);
     }
 
     public static void setBackgroundDark() {

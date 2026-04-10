@@ -17,6 +17,14 @@ public class Server {
 
 
     public Server() {
+        // Notes from Dr. Wilkerson:
+        // add a WebSocketHandler with the same structure as the other handlers
+        // inside WebSocket (handler? service?) have a switch statement for the different UserGameCommands
+        // then call the appropriate method
+
+        // somewhere I need to have a data structure for different WebSocket connections
+        // a map of gameID to a set of (connections? usernames?)
+        // for notifications, just go through the set indiscriminately, don't notify the person who made the action
 
         try {
             configureDatabase();
@@ -85,9 +93,6 @@ public class Server {
         userHandler.clear(ctx);
     }
 
-    // add a configure database method
-
-    // should the `json` field be a TEXT type instead? Or maybe a JSON type?
     private final String[] createStatements = {
 //            """
 //            DROP TABLE IF EXISTS users
