@@ -2,7 +2,6 @@ package ui;
 
 import chess.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import static ui.EscapeSequences.*;
@@ -38,12 +37,20 @@ public class ChessBoard {
         return array;
     }
 
+    static boolean [][] generateFilledBooleanBoardFromPositions(Collection<ChessPosition> positions) {
+        boolean [][] array = new boolean[8][8];
+        for (ChessPosition position : chess.ChessBoard.ALL_POSITIONS) {
+            if (positions.contains(position)) {
+                array[position.getRow()-1][position.getColumn()-1] = true;
+            }
+        }
+        return array;
+    }
 
     static void main() {
         System.out.print(ERASE_SCREEN);
 
         ChessGame game = new ChessGame();
-        game.getBoard().resetBoard();
         try {
             game.makeMove(new ChessMove(new ChessPosition(2, 2), new ChessPosition(4, 2), null));
             game.makeMove(new ChessMove(new ChessPosition(7, 3), new ChessPosition(5, 3), null));
@@ -55,20 +62,11 @@ public class ChessBoard {
             throw new RuntimeException(ex.getMessage());
         }
 
-        boolean [][] highlightedSquares = EMPTY_BOOLEAN_BOARD;
-        // find all valid end positions from the piece's valid moves
-        Collection<ChessMove> moves = game.validMoves(new ChessPosition(3, 6));
-        Collection<ChessPosition> positions = new ArrayList<>();
-        for (ChessMove move : moves) {
-            System.out.println(move.toString());
-            positions.add(move.getEndPosition());
-        }
+        // use the position of the piece we want to highlight to find the piece's valid end positions after moving
+        Collection<ChessPosition> positions = game.findEndPositionsFromPiecePosition(new ChessPosition(3, 6));
 
-        for (ChessPosition position : chess.ChessBoard.ALL_POSITIONS) {
-            if (positions.contains(position)) {
-                highlightedSquares[position.getRow()-1][position.getColumn()-1] = true;
-            }
-        }
+        // use those positions to generate the 2d boolean array
+        boolean [][] highlightedSquares = generateFilledBooleanBoardFromPositions(positions);
 
         drawChessBoard("WHITE", game.getBoard(), highlightedSquares);
         System.out.println();
@@ -76,12 +74,6 @@ public class ChessBoard {
     }
 
     public static void drawChessBoard(String teamColor, chess.ChessBoard board, boolean [][] squaresToHighlight) {
-        // Notes from Dr. Wilkerson:
-        // pass in as a parameter a 2d array of booleans representing valid positions (for highlighting)
-        // at the print square level, check that
-        // I assume that means that when you get the ChessPosition to highlight from the user
-        // you instantly get the valid moves (and only save the endpoints of said moves
-
         drawHorizontalBorder(teamColor);
 
         if (teamColor.equals("WHITE")) {drawChessBoardWhite(board, squaresToHighlight);}

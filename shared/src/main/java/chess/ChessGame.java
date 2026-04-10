@@ -199,6 +199,17 @@ public class ChessGame {
         else {setTeamTurn(TeamColor.WHITE);}
     }
 
+    public Collection<ChessPosition> findEndPositionsFromPiecePosition(ChessPosition position) {
+        Collection<ChessMove> moves = validMoves(position);
+        Collection<ChessPosition> positions = new ArrayList<>();
+        for (ChessMove move : moves) {
+            positions.add(move.getEndPosition());
+        }
+        positions.add(position);
+        return positions;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
