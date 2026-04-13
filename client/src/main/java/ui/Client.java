@@ -83,7 +83,10 @@ public class Client {
 
             switch (input) {
                 case "1" -> System.out.println("This should redraw the chess board");
-                case "2" -> System.out.println("This should make a move");
+                case "2" -> {
+                    if (!isPlayer) {System.out.println("Unable to make moves as an observer");}
+                    else {System.out.println("This should make a move");}
+                }
                 case "3" -> System.out.println("This should highlight legal moves");
                 case "4" -> help(true);
                 case "5" -> {
@@ -234,14 +237,13 @@ public class Client {
         }
 
         ArrayList<Integer> validGameNumbers = new ArrayList<>();
-        for (int i = 0; i < games.games().size(); i++) {
-            validGameNumbers.add(i+1);
-        }
+        for (int i = 0; i < games.games().size(); i++) {validGameNumbers.add(i+1);}
 
         Integer number = getValidGameNumber(validGameNumbers);
         String teamToJoin = getTeam();
 
-        JoinRequest joinRequest = new JoinRequest(teamToJoin, games.games().get(number - 1).gameID(), authToken);
+        int gameID = games.games().get(number - 1).gameID();
+        JoinRequest joinRequest = new JoinRequest(teamToJoin, gameID, authToken);
 
         JoinResult response =  serverFacade.joinGame(joinRequest);
         if (response != null) {

@@ -12,11 +12,20 @@ public class ServerFacade {
         // should this accept a url?
         // if it does, the url should have the root and port but not the last part
         clientCommunicator = new ClientCommunicator("localhost:" + port);
-        webSocketCommunicator = new WebSocketCommunicator("localhost:" + port);
+        try {
+            webSocketCommunicator = new WebSocketCommunicator("localhost:" + port);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to establish the WebSocket Connection");
+        }
     }
 
     public ClientCommunicator getClientCommunicator() {
         return clientCommunicator;
+    }
+
+    public WebSocketCommunicator getWebSocketCommunicator() {
+        // I don't think I need this actually
+        return webSocketCommunicator;
     }
 
     public RegisterResponse register(UserData userData) {
