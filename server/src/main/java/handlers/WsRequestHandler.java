@@ -9,6 +9,7 @@ import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import org.jetbrains.annotations.NotNull;
 import service.WsRequestService;
+import websocket.commands.ConnectCommand;
 import websocket.commands.UserGameCommand;
 
 //import jakarta.websocket.Session;
@@ -18,10 +19,10 @@ import org.eclipse.jetty.websocket.api.Session;
 
 public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
-    private final WsRequestService wsService = new WsRequestService();
     private final AuthHandler authHandler;
     private final ConnectionManager connectionManager = new ConnectionManager();
     private final Gson gson = new Gson();
+    private final WsRequestService wsService = new WsRequestService(connectionManager);
 
     public WsRequestHandler(AuthHandler authHandler) {
         this.authHandler = authHandler;
@@ -29,9 +30,6 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
-        // somehow add the session to the connectionManager?
-//        connectionManager.add(ctx.session);
-
         ctx.enableAutomaticPings();
         System.out.println("Websocket connected");
     }
@@ -45,11 +43,15 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
             UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
             gameId = command.getGameID();
             String username = (authHandler.getAuth(command.getAuthToken())).username();
-            connectionManager.add(gameId, session);
 
             // replace these with actual method calls to the Service (once I implement those lol)
             switch (command.getCommandType()) {
-                case CONNECT -> System.out.println("Connecting");
+                case CONNECT -> {
+                    ConnectCommand newCommand = gson.fromJson(ctx.message(), ConnectCommand.class);
+                    connectionManager.add(gameId, session);
+                    wsService.connect(session, username, newCommand);
+                    System.out.println("Connecting for real this time lol");
+                }
                 case MAKE_MOVE -> System.out.println("Making a move");
                 case LEAVE -> {
                     System.out.println("Leaving");
@@ -57,12 +59,11 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                 }
                 case RESIGN -> {
                     System.out.println("Resigning");
-                    connectionManager.remove(gameId, session);
+//                    connectionManager.remove(gameId, session);
                 }
             }
         }
         catch (Exception e) {
-            // fail somehow
             // REMEMBER TO UPDATE THIS
             // DON'T SWALLOW EXCEPTIONS
             throw new RuntimeException("The WSRequest handler crashed somehow: " + e.getMessage() + e.getClass());
@@ -70,10 +71,8 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleClose(WsCloseContext ctx) {
+    public void handleClose(@NotNull WsCloseContext ctx) {
         // somehow remove the session from the connectionManager?
-//        connectionManager.remove();
-
         System.out.println("Websocket closed");
     }
 }

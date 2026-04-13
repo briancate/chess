@@ -78,7 +78,6 @@ public class ServerFacade {
     }
 
     public JoinResult joinGame(JoinRequest joinRequest) {
-        // this doesn't have a response body, so I guess it's chill?
         try {
             return clientCommunicator.joinGame(joinRequest);
         }

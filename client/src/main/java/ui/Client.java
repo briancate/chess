@@ -1,11 +1,11 @@
 package ui;
 
 import chess.ChessGame;
-import client.WebSocketCommunicator;
 import com.google.gson.Gson;
 import model.JoinResult;
 import client.ServerFacade;
 import model.*;
+import websocket.commands.ConnectCommand;
 import websocket.commands.UserGameCommand;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
@@ -258,7 +258,7 @@ public class Client {
             return;
         }
 
-        connectWSToServer(gameID);
+        connectWSToServer(gameID, teamToJoin);
 
         gameplayREPL(true);
 
@@ -289,7 +289,7 @@ public class Client {
         Integer number = getValidGameNumber(validGameNumbers);
         int gameID = games.games().get(number - 1).gameID();
 
-        connectWSToServer(gameID);
+        connectWSToServer(gameID, "an observer");
 
         // draw out the initial state of the board
         // eventually I'll need to get the ChessGame from the database, not just use a blank one
@@ -305,9 +305,10 @@ public class Client {
         gameplayREPL(false);
     }
 
-    private void connectWSToServer(int gameID) {
-        UserGameCommand connectRequest = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+    private void connectWSToServer(int gameID, String teamColor) {
+        ConnectCommand connectRequest = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, teamColor);
         try {
+            // eventually change this so the ServerFacade has a method for this instead of bypassing the SF completely
             serverFacade.getWebSocketCommunicator().send(gson.toJson(connectRequest));
         }
         catch (Exception e) {

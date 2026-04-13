@@ -8,7 +8,6 @@ import jakarta.websocket.Session;
 import jakarta.websocket.WebSocketContainer;
 
 import java.net.URI;
-//import java.util.Scanner;
 
 public class WebSocketCommunicator extends Endpoint {
 
@@ -20,6 +19,7 @@ public class WebSocketCommunicator extends Endpoint {
         this.session = container.connectToServer(this, uri);
 
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            // turn this into a ServerMessage and handle it from there
             public void onMessage(String message) {
                 System.out.println(message);
             }
