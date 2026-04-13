@@ -15,7 +15,7 @@ public class ServerFacade {
         try {
             webSocketCommunicator = new WebSocketCommunicator("localhost:" + port);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to establish the WebSocket Connection");
+            throw new RuntimeException("Unable to establish the WebSocket Connection: " + e.getMessage() + e.getClass());
         }
     }
 
@@ -24,7 +24,6 @@ public class ServerFacade {
     }
 
     public WebSocketCommunicator getWebSocketCommunicator() {
-        // I don't think I need this actually
         return webSocketCommunicator;
     }
 

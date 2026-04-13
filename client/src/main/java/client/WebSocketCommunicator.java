@@ -32,8 +32,6 @@ public class WebSocketCommunicator extends Endpoint {
         System.out.println("Connected!");
     }
 
-
-
     // It looks like this is where I should establish the WS connection
     // I think this then sends the WS requests
 }

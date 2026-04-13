@@ -1,9 +1,13 @@
 package ui;
 
 import chess.ChessGame;
+import client.WebSocketCommunicator;
+import com.google.gson.Gson;
 import model.JoinResult;
 import client.ServerFacade;
 import model.*;
+import websocket.commands.UserGameCommand;
+
 import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
 
 import java.util.ArrayList;
@@ -14,6 +18,8 @@ public class Client {
     private final ServerFacade serverFacade;
     private String authToken;
     private final Scanner scanner = new Scanner(System.in);
+    private final Gson gson = new Gson();
+
 
     public Client(int port) {
         serverFacade = new ServerFacade(port);
@@ -74,6 +80,7 @@ public class Client {
     }
 
     public void gameplayREPL(boolean isPlayer) {
+        // do a load game request to get the board
         String input = "again, doesn't matter";
         while (!input.equals("6")) {
             printMenu(true);
@@ -251,6 +258,8 @@ public class Client {
             return;
         }
 
+        connectWSToServer(gameID);
+
         gameplayREPL(true);
 
         // all of that was just to call the server endpoint
@@ -277,7 +286,10 @@ public class Client {
             validGameNumbers.add(i+1);
         }
 
-        getValidGameNumber(validGameNumbers);
+        Integer number = getValidGameNumber(validGameNumbers);
+        int gameID = games.games().get(number - 1).gameID();
+
+        connectWSToServer(gameID);
 
         // draw out the initial state of the board
         // eventually I'll need to get the ChessGame from the database, not just use a blank one
@@ -291,7 +303,16 @@ public class Client {
         // send a connect ws message
         // transition to gameplay UI
         gameplayREPL(false);
+    }
 
+    private void connectWSToServer(int gameID) {
+        UserGameCommand connectRequest = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        try {
+            serverFacade.getWebSocketCommunicator().send(gson.toJson(connectRequest));
+        }
+        catch (Exception e) {
+            System.out.println("Error: " +  e.getMessage());
+        }
     }
 
     private String getTeam() {

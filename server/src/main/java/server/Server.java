@@ -14,7 +14,7 @@ public class Server {
     private final AuthHandler authHandler;
     private final UserHandler userHandler;
     private final GameHandler gameHandler;
-    // private final WSHandler wsHandler;
+    private final WsRequestHandler wsHandler;
 
 
     public Server() {
@@ -52,6 +52,7 @@ public class Server {
             this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
             this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
         }
+        this.wsHandler = new WsRequestHandler(authHandler);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
 
@@ -65,6 +66,12 @@ public class Server {
         .delete("/db", this::clear)
         .exception(DataAccessException.class, this::dataAccessHandler)
         .exception(ResponseException.class, this::responseHandler);
+
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(wsHandler);
+            ws.onClose(wsHandler);
+            ws.onMessage(wsHandler);
+        });
     }
 
     public int run(int desiredPort) {
