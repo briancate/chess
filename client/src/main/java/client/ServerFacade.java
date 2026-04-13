@@ -6,11 +6,13 @@ import model.*;
 public class ServerFacade {
 
     private final ClientCommunicator clientCommunicator;
+    private final WebSocketCommunicator webSocketCommunicator;
 
     public ServerFacade(int port) {
         // should this accept a url?
         // if it does, the url should have the root and port but not the last part
         clientCommunicator = new ClientCommunicator("localhost:" + port);
+        webSocketCommunicator = new WebSocketCommunicator("localhost:" + port);
     }
 
     public ClientCommunicator getClientCommunicator() {

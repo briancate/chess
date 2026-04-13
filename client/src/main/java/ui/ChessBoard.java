@@ -59,7 +59,7 @@ public class ChessBoard {
         }
         catch (InvalidMoveException ex) {
             // this would actually happen in the server I think
-            throw new RuntimeException(ex.getMessage());
+            throw new RuntimeException(ex.getMessage()); // only a runtime exception because it's in a main method lol
         }
 
         // use the position of the piece we want to highlight to find the piece's valid end positions after moving

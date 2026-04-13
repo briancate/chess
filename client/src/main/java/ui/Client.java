@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import model.JoinResult;
 import client.ServerFacade;
 import model.*;
@@ -14,7 +15,6 @@ public class Client {
     private String authToken;
     private final Scanner scanner = new Scanner(System.in);
 
-
     public Client(int port) {
         serverFacade = new ServerFacade(port);
     }
@@ -24,10 +24,13 @@ public class Client {
         client.run();
     }
 
+    // Client will eventually need to implement ServerMessageObserver
+    // have a method notify with a switch statement for notifications, errors, and load game
+
     public void run() {
         System.out.print(SET_TEXT_COLOR_WHITE);
         System.out.println("Welcome to Brian's Fantastic 240 Chess Extravaganza!");
-        printMenu();
+        printMenu(false);
 
         String input = "lol this doesn't matter";
         while (!input.equals("4")) {
@@ -39,18 +42,17 @@ public class Client {
             switch (input) {
                 case "1" -> register();
                 case "2" -> login();
-                case "3" -> help();
+                case "3" -> help(false);
                 case "4" -> System.out.println("Thanks for playing!");
                 default -> System.out.println("Your selection must be a number between 1 and 4");
             }
         }
     }
 
-
-    public void loginREPL() {
+    public void postLoginREPL() {
         String input = "lol this doesn't matter";
         while (!input.equals("6")) {
-            printMenu();
+            printMenu(false);
             System.out.print("Please enter a number: ");
             input = scanner.nextLine();
             System.out.println();
@@ -60,54 +62,102 @@ public class Client {
                 case "2" -> createGame();
                 case "3" -> joinGame();
                 case "4" -> observeGame();
-                case "5" -> help();
+                case "5" -> help(false);
                 case "6" -> {
                     logout();
                     authToken = null;
-                    printMenu();
+                    printMenu(false);
                 }
                 default -> System.out.println("Your selection must be a number between 1 and 6");
             }
         }
+    }
 
+    public void gameplayREPL(boolean isPlayer) {
+        String input = "again, doesn't matter";
+        while (!input.equals("6")) {
+            printMenu(true);
+            System.out.println("Please enter a number: ");
+            input = scanner.nextLine();
+            System.out.println();
+
+            switch (input) {
+                case "1" -> System.out.println("This should redraw the chess board");
+                case "2" -> System.out.println("This should make a move");
+                case "3" -> System.out.println("This should highlight legal moves");
+                case "4" -> help(true);
+                case "5" -> {
+                    if (!isPlayer) {System.out.println("Unable to resign as an observer");}
+                    else {System.out.println("This should resign the game");}
+                }
+                case "6" -> {
+                    if (isPlayer) {System.out.println("This should call a WS endpoint to update the game stored in the DB");}
+                    System.out.println("This should leave the game");
+                }
+                default -> System.out.println("Your selection must be a number between 1 and 6");
+            }
+        }
     }
 
 
-    public void help() {
-        if (authToken == null) {
-            System.out.println("""
-                    Register: create an account
-                    Login: login to an existing account
-                    Help: displays this text
-                    Quit: exits the program""" + "\n");
+    public void help(boolean gameplayUI) {
+        if (!gameplayUI) {
+            if (authToken == null) {
+                // for preLogin
+                System.out.println("""
+                        Register: create an account
+                        Login: login to an existing account
+                        Help: displays this text
+                        Quit: exits the program""" + "\n");
+            } else {
+                // for postLogin
+                System.out.println("""
+                        List Games: lists all Chess games
+                        Create Game: create a new Chess game
+                        Play Game: join an existing Chess game as a player
+                        Observe Game: join an existing Chess game as an observer
+                        Help: displays this text
+                        Logout: ends the session""" + "\n");
+            }
         }
         else {
+            // for gameplay UI
             System.out.println("""
-                    List Games: lists all Chess games
-                    Create Game: create a new Chess game
-                    Play Game: join an existing Chess game as a player
-                    Observe Game: join an existing Chess game as an observer
+                    Redraw Chess Board: draws the board again
+                    Make Move: make a move in the current game
+                    Highlight Legal Moves: show the legal moves of the piece at a give position
                     Help: displays this text
-                    Logout: ends the session""" + "\n");
+                    Resign: admit defeat
+                    Leave: leave the current game""" + "\n");
         }
     }
 
-    public void printMenu() {
-        if (authToken == null) {
-            System.out.println("""
-                    1. Register
-                    2. Login
-                    3. Help
-                    4. Quit""");
+    public void printMenu(boolean gameplayUI) {
+        if (!gameplayUI) {
+            if (authToken == null) {
+                System.out.println("""
+                        1. Register
+                        2. Login
+                        3. Help
+                        4. Quit""");
+            } else {
+                System.out.println("""
+                        1. List Games
+                        2. Create Game
+                        3. Play Game
+                        4. Observe Game
+                        5. Help
+                        6. Logout""");
+            }
         }
         else {
             System.out.println("""
-                    1. List Games
-                    2. Create Game
-                    3. Play Game
-                    4. Observe Game
-                    5. Help
-                    6. Logout""");
+                    1. Redraw Chess Board
+                    2. Make Move
+                    3. Highlight Legal Moves
+                    4. Help
+                    5. Resign
+                    6. Leave""");
         }
     }
 
@@ -199,7 +249,9 @@ public class Client {
             return;
         }
 
-        // of that was just to call the server endpoint
+        gameplayREPL(true);
+
+        // all of that was just to call the server endpoint
         // then call the server's /ws endpoint
         // send a connect ws message
         // transition to gameplay UI
@@ -225,15 +277,19 @@ public class Client {
 
         getValidGameNumber(validGameNumbers);
 
+        // draw out the initial state of the board
+        // eventually I'll need to get the ChessGame from the database, not just use a blank one
+        // also, the game being printed out should result from receiving a LoadGame message from the server
+        System.out.println();
+        chess.ChessGame game = new ChessGame();
+        ChessBoard.drawChessBoard("WHITE", game.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
+        System.out.println();
+
         // then call the server's /ws endpoint
         // send a connect ws message
         // transition to gameplay UI
+        gameplayREPL(false);
 
-        // for the moment, just print out a chessboard
-        // eventually though, I'll need to get the ChessGame to print it out
-        System.out.println();
-        ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
-        System.out.println();
     }
 
     private String getTeam() {
@@ -293,7 +349,7 @@ public class Client {
             System.out.println("Successfully logged in as " + response.username() + "!\n");
         }
 
-        if (authToken != null) {loginREPL();}
+        if (authToken != null) {postLoginREPL();}
     }
 
     private String getNonEmptyString(String prompt) {

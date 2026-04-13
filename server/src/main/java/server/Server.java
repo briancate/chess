@@ -14,6 +14,7 @@ public class Server {
     private final AuthHandler authHandler;
     private final UserHandler userHandler;
     private final GameHandler gameHandler;
+    // private final WSHandler wsHandler;
 
 
     public Server() {
@@ -24,7 +25,12 @@ public class Server {
 
         // somewhere I need to have a data structure for different WebSocket connections
         // a map of gameID to a set of (connections? usernames?)
+        // follow the PetShop ConnectionManager as a guide for that?
         // for notifications, just go through the set indiscriminately, don't notify the person who made the action
+
+        // for deserializing the WS message, I might need to do it twice (once for the UserGameCommand,
+        // and once for the MakeMoveCommand)
+        // or I could potentially just have it be null if it's not a MakeMove request
 
         try {
             configureDatabase();
