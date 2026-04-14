@@ -43,9 +43,6 @@ public class Client implements ServerMessageObserver {
         client.run();
     }
 
-    // Client will eventually need to implement ServerMessageObserver
-    // have a method notify with a switch statement for notifications, errors, and load game
-
     public void displayNotification(Notification notification) {
         System.out.println(notification.getMessage() + "\n");
     }
@@ -111,7 +108,6 @@ public class Client implements ServerMessageObserver {
     }
 
     public void gameplayREPL(boolean isPlayer, int gameID, String teamColor) {
-        // do a load game request to get the board
         String input = "again, doesn't matter";
         while (!input.equals("6")) {
             printMenu(true);
@@ -135,7 +131,6 @@ public class Client implements ServerMessageObserver {
                         if (!validMoves.contains(move)) {System.out.println("Invalid move.");}
                         // also check if it's the person's turn? Since validMoves doesn't care about that
                         else {
-                            System.out.println("This should make the move");
                             MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move, teamColor);
                             try {
                                 serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
@@ -160,6 +155,14 @@ public class Client implements ServerMessageObserver {
                 case "6" -> {
                     if (isPlayer) {System.out.println("This should call a WS endpoint to update the game stored in the DB");}
                     System.out.println("This should leave the game");
+                    UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+                    try {
+                        serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
+                    }
+                    catch (Exception e) {
+                        System.out.println("Error: " +  e.getMessage());
+                    }
+
                 }
                 default -> System.out.println("Your selection must be a number between 1 and 6");
             }
@@ -317,14 +320,8 @@ public class Client implements ServerMessageObserver {
 
         connectWSToServer(gameID, teamToJoin);
 
-
         teamColor = teamToJoin;
         gameplayREPL(true, gameID, teamColor);
-
-        // all of that was just to call the server endpoint
-        // then call the server's /ws endpoint
-        // send a connect ws message
-        // transition to gameplay UI
     }
 
     private void observeGame() {
@@ -344,15 +341,12 @@ public class Client implements ServerMessageObserver {
 
         connectWSToServer(gameID, "an observer");
 
-        // then call the server's /ws endpoint
-        // send a connect ws message
-        // transition to gameplay UI
         teamColor = "WHITE";
         gameplayREPL(false, gameID, teamColor);
     }
 
     private void connectWSToServer(int gameID, String teamColor) {
-        ConnectCommand connectRequest = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, teamColor);
+        ConnectCommand connectRequest = new ConnectCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, teamColor.toLowerCase());
         try {
             // eventually change this so the ServerFacade has a method for this instead of bypassing the SF completely
             serverFacade.getWebSocketCommunicator().send(gson.toJson(connectRequest));

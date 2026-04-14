@@ -23,8 +23,18 @@ public class WsRequestService {
         this.connectionManager = connectionManager;
     }
 
-    public void connect(Session session, String username, ConnectCommand command) {
-        String message = username + " joined the game as " + command.getTeamColor().toLowerCase();
+    public SQLWsDAO getSqlWsDAO() {
+        return sqlWsDAO;
+    }
+
+    public void connect(Session session, String username, ConnectCommand command) throws Exception {
+        String teamColor;
+        if (command.getTeamColor() == null) {teamColor = "an observer";}
+        else {teamColor = command.getTeamColor();}
+//        String ending = command.getTeamColor() == null ? "" : command.getTeamColor().toLowerCase();
+        String message = username + " joined the game as " + teamColor;
+
+        // maybe check the DAO to see if the username shows up?
         Notification notification = new Notification(message);
         String serializedNotification = gson.toJson(notification);
         try {
@@ -32,19 +42,19 @@ public class WsRequestService {
         }
         catch (Exception e) {
             // Eventually change this to a ServerMessage.Error message
-            throw new RuntimeException("Connect failed somehow lol" + e.getMessage() + e.getClass());
+            ServerMessageError error = new ServerMessageError(e.getMessage());
+            connectionManager.notifySingleSession(session, command.getGameID(), gson.toJson(error));
         }
     }
 
-    public void loadGame(Session session, String teamColor, int gameID) throws Exception {
+    public void loadGame(Session session, int gameID) throws Exception {
         try {
-
+            // potentially return String teamColor if that broke things
             ChessGame game = sqlWsDAO.getGame(gameID).game();
-            if (teamColor.equals("an observer")) {teamColor = "WHITE";}
-            LoadGame loadGame = new LoadGame(game, teamColor);
-            String serializedLoadGame = gson.toJson(loadGame);
+//            if (teamColor.equals("an observer")) {teamColor = "WHITE";}
+            LoadGame loadGame = new LoadGame(game);
             // Add a second try / catch block here?
-            connectionManager.notifySingleSession(session, gameID, serializedLoadGame);
+            connectionManager.notifySingleSession(session, gameID, gson.toJson(loadGame));
         }
         catch (Exception ex) {
             ServerMessageError error = new ServerMessageError(ex.getMessage());
@@ -52,14 +62,28 @@ public class WsRequestService {
         }
     }
 
-    public void makeMove(Session session, String username, int gameID, ChessMove move, String teamColor) throws Exception {
+    public void leaveGame(Session session, String username, int gameID) throws Exception {
+        try {
+            sqlWsDAO.removeUser(gameID, username);
+            System.out.println("Just after the sql Remove");
+            Notification notification = new Notification(username + " left the game");
+            connectionManager.broadcast(session, gameID, gson.toJson(notification));
+            System.out.println("Should have been notified");
+        }
+        catch (Exception e) {
+            ServerMessageError error = new ServerMessageError(e.getMessage());
+            connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
+        }
+    }
+
+    public void makeMove(Session session, String username, int gameID, ChessMove move) throws Exception {
         try {
             GameData gameData = sqlWsDAO.getGame(gameID);
             ChessGame game = gameData.game();
             game.makeMove(move);
 
             // send everyone the updated game
-            LoadGame loadGame = new LoadGame(game, teamColor);
+            LoadGame loadGame = new LoadGame(game);
             connectionManager.broadcast(null, gameID, gson.toJson(loadGame));
 
             // save the game back to the database
@@ -104,6 +128,7 @@ public class WsRequestService {
         }
         catch (Exception ex) {
             ServerMessageError error = new ServerMessageError(ex.getMessage());
+            System.out.println(ex.getMessage());
             connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
         }
     }

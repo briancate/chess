@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -35,7 +37,9 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return String.format("[%d,%d]", row, col);
+        ArrayList<String> validInputs = new ArrayList<>(List.of("a", "b", "c", "d", "e", "f", "g", "h"));
+        String column = validInputs.get(col - 1);
+        return String.format("%s%d", column, row);
     }
 
     @Override

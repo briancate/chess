@@ -1,6 +1,7 @@
 package handlers;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
 import io.javalin.websocket.WsConnectContext;
@@ -41,7 +42,26 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
             gameID = command.getGameID();
-            String username = (authHandler.getAuth(command.getAuthToken())).username();
+            String username;
+            // THIS IS WHERE IT CRASHES IF YOU HAVE A BAD AUTHTOKEN
+            try {
+                username = (authHandler.getAuth(command.getAuthToken())).username();
+            }
+            catch (DataAccessException e) {
+//                connectionManager.add(gameID, session);
+                ServerMessageError error = new ServerMessageError(e.getMessage());
+                connectionManager.notifySingleSession(session, command.getGameID(), gson.toJson(error));
+                return;
+            }
+
+            try {
+                wsService.getSqlWsDAO().getGame(gameID);
+            }
+            catch (DataAccessException e) {
+                ServerMessageError error = new ServerMessageError(e.getMessage());
+                connectionManager.notifySingleSession(session, command.getGameID(), gson.toJson(error));
+                return;
+            }
 
             // replace these with actual method calls to the Service (once I implement those lol)
             switch (command.getCommandType()) {
@@ -49,28 +69,23 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                     ConnectCommand newCommand = gson.fromJson(ctx.message(), ConnectCommand.class);
                     connectionManager.add(gameID, session);
                     wsService.connect(session, username, newCommand);
-                    wsService.loadGame(session, newCommand.getTeamColor(), gameID);
-                    System.out.println("Connecting for real this time lol");
+                    wsService.loadGame(session, gameID);
                 }
                 case MAKE_MOVE -> {
-                    System.out.println("Making a move");
                     MakeMoveCommand newCommand = gson.fromJson(ctx.message(), MakeMoveCommand.class);
-                    wsService.makeMove(session, username, gameID, newCommand.getMove(), newCommand.getTeamColor());
+                    wsService.makeMove(session, username, gameID, newCommand.getMove());
                 }
                 case LEAVE -> {
                     System.out.println("Leaving");
+                    wsService.leaveGame(session, username, gameID);
                     connectionManager.remove(gameID, session);
                 }
-                case RESIGN -> {
-                    System.out.println("Resigning");
-//                    connectionManager.remove(gameId, session);
-                }
+                case RESIGN -> System.out.println("Resigning");
             }
         }
         catch (Exception e) {
             // REMEMBER TO UPDATE THIS
             // DON'T SWALLOW EXCEPTIONS
-
 //            UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
 //            gameID = command.getGameID();
 //            ServerMessageError error = new ServerMessageError(e.getMessage());

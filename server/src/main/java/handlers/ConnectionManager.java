@@ -37,6 +37,7 @@ public class ConnectionManager {
     }
 
     public void notifySingleSession(Session session, int gameID, String message) throws Exception {
+        add(gameID, session);
         for (Session c : connections.get(gameID)) {
             if (c.isOpen()) {
                 if (c.equals(session)) {
