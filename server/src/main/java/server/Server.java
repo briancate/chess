@@ -52,7 +52,7 @@ public class Server {
             this.userHandler = new UserHandler(new MemoryUserDAO(), authHandler);
             this.gameHandler = new GameHandler(new MemoryGameDAO(), authHandler);
         }
-        this.wsHandler = new WsRequestHandler(authHandler);
+        this.wsHandler = new WsRequestHandler(authHandler, gameHandler);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
 

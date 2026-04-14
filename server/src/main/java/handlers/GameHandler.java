@@ -26,6 +26,10 @@ public class GameHandler {
         this.authHandler = authHandler;
     }
 
+    public GameService getGameService() {
+        return this.gameService;
+    }
+
     public void handleCreate(Context ctx) throws DataAccessException, ResponseException {
         authHandler.validateAuth(ctx);
 

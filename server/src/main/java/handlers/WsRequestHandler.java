@@ -22,10 +22,11 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final AuthHandler authHandler;
     private final ConnectionManager connectionManager = new ConnectionManager();
     private final Gson gson = new Gson();
-    private final WsRequestService wsService = new WsRequestService(connectionManager);
+    private final WsRequestService wsService;
 
-    public WsRequestHandler(AuthHandler authHandler) {
+    public WsRequestHandler(AuthHandler authHandler, GameHandler gameHandler) {
         this.authHandler = authHandler;
+        this.wsService = new WsRequestService(connectionManager, gameHandler.getGameService());
     }
 
     @Override
@@ -56,7 +57,7 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             // test the DAO to see if the gameID is valid
             try {
-                wsService.getSqlWsDAO().getGame(gameID);
+                wsService.getGameService().getGame(gameID);
             }
             catch (DataAccessException e) {
                 ServerMessageError error = new ServerMessageError(e.getMessage());

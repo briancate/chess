@@ -15,10 +15,8 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessageError;
-
 import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +30,6 @@ public class Client implements ServerMessageObserver {
     private final Gson gson = new Gson();
     private ChessGame currentGame;
     private String teamColor;
-
 
     public Client(int port) {
         serverFacade = new ServerFacade(port, this);
@@ -116,10 +113,12 @@ public class Client implements ServerMessageObserver {
             System.out.println();
 
             switch (input) {
-                case "1" -> ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
+                case "1" ->
+                        ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
                 case "2" -> {
-                    if (!isPlayer) {System.out.println("Unable to make moves as an observer");}
-                    else {
+                    if (!isPlayer) {
+                        System.out.println("Unable to make moves as an observer");
+                    } else {
                         ChessMove move = getChessMoveFromUser();
                         if (move == null) {
                             System.out.println("Unable to make move because you do not have a piece at that location.");
@@ -128,15 +127,16 @@ public class Client implements ServerMessageObserver {
 
                         Collection<ChessMove> validMoves = currentGame.validMoves(move.getStartPosition());
 
-                        if (!validMoves.contains(move)) {System.out.println("Invalid move.");}
+                        if (!validMoves.contains(move)) {
+                            System.out.println("Invalid move.");
+                        }
                         // also check if it's the person's turn? Since validMoves doesn't care about that
                         else {
                             MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move, teamColor);
                             try {
                                 serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
-                            }
-                            catch (Exception e) {
-                                System.out.println("Error: " +  e.getMessage());
+                            } catch (Exception e) {
+                                System.out.println("Error: " + e.getMessage());
                             }
                         }
                     }
@@ -144,20 +144,20 @@ public class Client implements ServerMessageObserver {
                 case "3" -> {
                     ChessPosition position = getChessPositionFromUser("Please enter the position of the piece you wish to highlight:");
                     Collection<ChessPosition> positions = currentGame.findEndPositionsFromPiecePosition(position);
-                    boolean [][] booleanBoard = ui.ChessBoard.generateFilledBooleanBoardFromPositions(positions);
+                    boolean[][] booleanBoard = ui.ChessBoard.generateFilledBooleanBoardFromPositions(positions);
                     ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), booleanBoard);
                 }
                 case "4" -> help(true);
                 case "5" -> {
-                    if (!isPlayer) {System.out.println("Unable to resign as an observer");}
-                    else {
+                    if (!isPlayer) {
+                        System.out.println("Unable to resign as an observer");
+                    } else {
                         System.out.println("This should resign the game");
                         UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
                         try {
                             serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
-                        }
-                        catch (Exception e) {
-                            System.out.println("Error: " +  e.getMessage());
+                        } catch (Exception e) {
+                            System.out.println("Error: " + e.getMessage());
                         }
                     }
                 }
@@ -165,9 +165,8 @@ public class Client implements ServerMessageObserver {
                     UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
                     try {
                         serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
-                    }
-                    catch (Exception e) {
-                        System.out.println("Error: " +  e.getMessage());
+                    } catch (Exception e) {
+                        System.out.println("Error: " + e.getMessage());
                     }
                 }
                 default -> System.out.println("Your selection must be a number between 1 and 6");
@@ -175,18 +174,15 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-
     public void help(boolean gameplayUI) {
         if (!gameplayUI) {
-            if (authToken == null) {
-                // for preLogin
+            if (authToken == null) { // for preLogin
                 System.out.println("""
                         Register: create an account
                         Login: login to an existing account
                         Help: displays this text
                         Quit: exits the program""" + "\n");
-            } else {
-                // for postLogin
+            } else { // for postLogin
                 System.out.println("""
                         List Games: lists all Chess games
                         Create Game: create a new Chess game
@@ -195,9 +191,7 @@ public class Client implements ServerMessageObserver {
                         Help: displays this text
                         Logout: ends the session""" + "\n");
             }
-        }
-        else {
-            // for gameplay UI
+        } else { // for gameplay UI
             System.out.println("""
                     Redraw Chess Board: draws the board again
                     Make Move: make a move in the current game
@@ -225,8 +219,7 @@ public class Client implements ServerMessageObserver {
                         5. Help
                         6. Logout""");
             }
-        }
-        else {
+        } else {
             System.out.println("""
                     1. Redraw Chess Board
                     2. Make Move
@@ -260,7 +253,6 @@ public class Client implements ServerMessageObserver {
 
         if (response == null) {System.out.println("Successfully logged out\n");}
         else {System.out.println("Logout request failed: " + response.message() + "\n");}
-
     }
 
     private void createGame() {
@@ -271,16 +263,11 @@ public class Client implements ServerMessageObserver {
 
         CreateResponse response = serverFacade.createGame(gameData, authToken);
 
-        if (response.message() != null) {
-            System.out.println("The create request failed: " + response.message() + "\n");
-        }
-        else {
-            System.out.println("Successfully created game with name " + gameData.gameName() + "\n");
-        }
+        if (response.message() != null) {System.out.println("The create request failed: " + response.message() + "\n");}
+        else {System.out.println("Successfully created game with name " + gameData.gameName() + "\n");}
     }
 
     private ListGamesResponse listGames() {
-        // do a for loop through the games, use the index to go back and forth between gameId and gameNumber
         ListGamesResponse gamesResponse = serverFacade.listGames(authToken);
 
         if (gamesResponse.games() == null) {
@@ -310,7 +297,7 @@ public class Client implements ServerMessageObserver {
         }
 
         ArrayList<Integer> validGameNumbers = new ArrayList<>();
-        for (int i = 0; i < games.games().size(); i++) {validGameNumbers.add(i+1);}
+        for (int i = 0; i < games.games().size(); i++) {validGameNumbers.add(i + 1);}
 
         Integer number = getValidGameNumber(validGameNumbers);
         String teamToJoin = getTeam();
@@ -318,7 +305,7 @@ public class Client implements ServerMessageObserver {
         int gameID = games.games().get(number - 1).gameID();
         JoinRequest joinRequest = new JoinRequest(teamToJoin, gameID, authToken);
 
-        JoinResult response =  serverFacade.joinGame(joinRequest);
+        JoinResult response = serverFacade.joinGame(joinRequest);
         if (response != null) {
             System.out.println("The join request failed: " + response.message() + "\n");
             return;
@@ -338,9 +325,7 @@ public class Client implements ServerMessageObserver {
         }
 
         ArrayList<Integer> validGameNumbers = new ArrayList<>();
-        for (int i = 0; i < games.games().size(); i++) {
-            validGameNumbers.add(i+1);
-        }
+        for (int i = 0; i < games.games().size(); i++) {validGameNumbers.add(i + 1);}
 
         Integer number = getValidGameNumber(validGameNumbers);
         int gameID = games.games().get(number - 1).gameID();
@@ -356,18 +341,16 @@ public class Client implements ServerMessageObserver {
         try {
             // eventually change this so the ServerFacade has a method for this instead of bypassing the SF completely
             serverFacade.getWebSocketCommunicator().send(gson.toJson(connectRequest));
-        }
-        catch (Exception e) {
-            System.out.println("Error: " +  e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
     private void resolveLoginAttempt(RegisterResponse response) {
         if (response.message() != null) {
-            // find a way to give more information here
+            // find a way to give more information here?
             System.out.println("The login request failed: " + response.message() + "\n");
-        }
-        else {
+        } else {
             authToken = response.authToken();
             System.out.println("Successfully logged in as " + response.username() + "!\n");
         }
@@ -379,7 +362,7 @@ public class Client implements ServerMessageObserver {
         System.out.println("Please enter the team you wish to join:");
 
         String input;
-        while(true) {
+        while (true) {
             System.out.println("1: White");
             System.out.println("2: Black");
             input = scanner.nextLine();
@@ -398,8 +381,7 @@ public class Client implements ServerMessageObserver {
             else {System.out.print("Please enter the number of the game you wish to join: ");}
             try {
                 gameNumber = Integer.parseInt(scanner.nextLine());
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 continue;
             }
             if (validNumbers.contains(gameNumber)) {gotValidInput = true;}
@@ -421,13 +403,10 @@ public class Client implements ServerMessageObserver {
         if (type == ChessPiece.PieceType.PAWN) {
             if (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endPosition.getRow() == 8) {
                 type = getPromotionPieceFromUser();
-            }
-            else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getColumn() == 1) {
+            } else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getColumn() == 1) {
                 type = getPromotionPieceFromUser();
-            }
-            else {type = null;}
-        }
-        else {type = null;}
+            } else {type = null;}
+        } else {type = null;}
         return type;
     }
 
@@ -452,7 +431,6 @@ public class Client implements ServerMessageObserver {
     }
 
     private ChessPosition getChessPositionFromUser(String prompt) { //
-//        System.out.println("Please enter the position of the piece using the column letter and row number (ex e 4)");
         System.out.println(prompt);
         int col = getColFromUser();
         int row = getRowFromUser();
@@ -490,11 +468,8 @@ public class Client implements ServerMessageObserver {
         String password = getNonEmptyString("Please enter your password: ");
 
         String email;
-        if (requestType.equals("REGISTER")) {
-            email = getNonEmptyString("Please enter your email: ");
-        }
+        if (requestType.equals("REGISTER")) {email = getNonEmptyString("Please enter your email: ");}
         else {email = null;}
-
         return new UserData(username, password, email);
     }
 
@@ -509,8 +484,4 @@ public class Client implements ServerMessageObserver {
         }
         return output;
     }
-
-    // Have "back" options for join game, etc.?
-    // Go over error handling again
-    // Should play or observe stop the repl loop?
 }

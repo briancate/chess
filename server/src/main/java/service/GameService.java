@@ -14,6 +14,8 @@ public class GameService {
 
     public GameService(GameDAO gameDAO) {this.gameDAO = gameDAO;}
 
+    public GameDAO getGameDAO() {return this.gameDAO;}
+
     public int createGame(GameData gameData) throws ResponseException {
         return gameDAO.createGame(gameData);
     }

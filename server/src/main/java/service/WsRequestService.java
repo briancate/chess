@@ -18,15 +18,22 @@ import java.util.Objects;
 public class WsRequestService {
 
     private final ConnectionManager connectionManager;
+//    private final SQLGameDAO sqlGameDAO;
+    private final GameService gameService;
     private final Gson gson = new Gson();
     private final SQLWsDAO sqlWsDAO = new SQLWsDAO();
 
-    public WsRequestService(ConnectionManager connectionManager) {
+    public WsRequestService(ConnectionManager connectionManager, GameService gameService) {
+        this.gameService = gameService;
         this.connectionManager = connectionManager;
     }
 
     public SQLWsDAO getSqlWsDAO() {
         return sqlWsDAO;
+    }
+
+    public GameService getGameService() {
+        return gameService;
     }
 
     public void connect(Session session, String username, ConnectCommand command) throws Exception {
@@ -48,7 +55,7 @@ public class WsRequestService {
 
     public void loadGame(Session session, int gameID) throws Exception {
         try {
-            ChessGame game = sqlWsDAO.getGame(gameID).game();
+            ChessGame game = gameService.getGame(gameID).game();
             LoadGame loadGame = new LoadGame(game);
             // Add a second try / catch block here?
             connectionManager.notifySingleSession(session, gameID, gson.toJson(loadGame));
@@ -75,7 +82,7 @@ public class WsRequestService {
 
     public void resign(Session session, String username, int gameID) throws Exception {
         try {
-            GameData gameData = sqlWsDAO.getGame(gameID);
+            GameData gameData = gameService.getGame(gameID);
             ChessGame game = gameData.game();
 
             // if an observer tries to resign, send an error and fail
@@ -104,7 +111,7 @@ public class WsRequestService {
 
     public void makeMove(Session session, String username, int gameID, ChessMove move) throws Exception {
         try {
-            GameData gameData = sqlWsDAO.getGame(gameID);
+            GameData gameData = gameService.getGame(gameID);
             ChessGame game = gameData.game();
 
             // if an observer tries to make a move, send an error and fail
