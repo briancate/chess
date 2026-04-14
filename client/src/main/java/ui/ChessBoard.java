@@ -38,6 +38,7 @@ public class ChessBoard {
     }
 
     static boolean [][] generateFilledBooleanBoardFromPositions(Collection<ChessPosition> positions) {
+        if (positions == null) {return EMPTY_BOOLEAN_BOARD;}
         boolean [][] array = new boolean[8][8];
         for (ChessPosition position : chess.ChessBoard.ALL_POSITIONS) {
             if (positions.contains(position)) {

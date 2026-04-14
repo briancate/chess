@@ -20,9 +20,7 @@ public class ServerFacade {
         }
     }
 
-    public ClientCommunicator getClientCommunicator() {
-        return clientCommunicator;
-    }
+    public ClientCommunicator getClientCommunicator() {return clientCommunicator;}
 
     public WebSocketCommunicator getWebSocketCommunicator() {
         return webSocketCommunicator;

@@ -201,6 +201,7 @@ public class ChessGame {
 
     public Collection<ChessPosition> findEndPositionsFromPiecePosition(ChessPosition position) {
         Collection<ChessMove> moves = validMoves(position);
+        if (moves == null) {return null;}
         Collection<ChessPosition> positions = new ArrayList<>();
         for (ChessMove move : moves) {
             positions.add(move.getEndPosition());

@@ -2,14 +2,12 @@ package service;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
 import dataaccess.SQLWsDAO;
 import handlers.ConnectionManager;
 import websocket.commands.ConnectCommand;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
-import websocket.messages.ServerMessage;
 
 
 public class WsRequestService {

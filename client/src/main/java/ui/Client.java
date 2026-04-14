@@ -1,6 +1,7 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import client.ServerMessageObserver;
 import com.google.gson.Gson;
 import model.JoinResult;
@@ -14,6 +15,8 @@ import websocket.messages.Notification;
 import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Scanner;
 
 public class Client implements ServerMessageObserver {
@@ -22,6 +25,7 @@ public class Client implements ServerMessageObserver {
     private String authToken;
     private final Scanner scanner = new Scanner(System.in);
     private final Gson gson = new Gson();
+    private ChessGame currentGame;
 
 
     public Client(int port) {
@@ -41,6 +45,7 @@ public class Client implements ServerMessageObserver {
     }
 
     public void displayLoadGame(LoadGame loadGame) {
+        currentGame = loadGame.getGame();
         System.out.println();
         ui.ChessBoard.drawChessBoard(loadGame.getTeamColor(), loadGame.getGame().getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
         System.out.println();
@@ -92,7 +97,7 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    public void gameplayREPL(boolean isPlayer) {
+    public void gameplayREPL(boolean isPlayer, String teamColor) {
         // do a load game request to get the board
         String input = "again, doesn't matter";
         while (!input.equals("6")) {
@@ -102,12 +107,17 @@ public class Client implements ServerMessageObserver {
             System.out.println();
 
             switch (input) {
-                case "1" -> System.out.println("This should redraw the chess board");
+                case "1" -> ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
                 case "2" -> {
                     if (!isPlayer) {System.out.println("Unable to make moves as an observer");}
                     else {System.out.println("This should make a move");}
                 }
-                case "3" -> System.out.println("This should highlight legal moves");
+                case "3" -> {
+                    ChessPosition position = getChessPositionFromUser();
+                    Collection<ChessPosition> positions = currentGame.findEndPositionsFromPiecePosition(position);
+                    boolean [][] booleanBoard = ui.ChessBoard.generateFilledBooleanBoardFromPositions(positions);
+                    ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), booleanBoard);
+                }
                 case "4" -> help(true);
                 case "5" -> {
                     if (!isPlayer) {System.out.println("Unable to resign as an observer");}
@@ -273,7 +283,7 @@ public class Client implements ServerMessageObserver {
 
         connectWSToServer(gameID, teamToJoin);
 
-        gameplayREPL(true);
+        gameplayREPL(true, teamToJoin);
 
         // all of that was just to call the server endpoint
         // then call the server's /ws endpoint
@@ -301,7 +311,7 @@ public class Client implements ServerMessageObserver {
         // then call the server's /ws endpoint
         // send a connect ws message
         // transition to gameplay UI
-        gameplayREPL(false);
+        gameplayREPL(false, "WHITE");
     }
 
     private void connectWSToServer(int gameID, String teamColor) {
@@ -347,6 +357,40 @@ public class Client implements ServerMessageObserver {
             if (validNumbers.contains(gameNumber)) {gotValidInput = true;}
         }
         return gameNumber;
+    }
+
+    private ChessPosition getChessPositionFromUser() {
+//        System.out.println("Please enter the coordinates for the piece you wish to highlight");
+//        System.out.println("Use the format <column><row>. For example, e2");
+        int col = getColFromUser();
+        int row = getRowFromUser();
+        return new ChessPosition(row, col);
+    }
+
+    private int getColFromUser() {
+        System.out.println("Please enter the column of the piece (a lowercase letter between 'a' and 'h'): ");
+        boolean gotValidInput = false;
+        ArrayList<String> validInputs = new ArrayList<>(List.of("a", "b", "c", "d", "e", "f", "g", "h"));
+        String output = "";
+        while (!gotValidInput) {
+            output = scanner.nextLine();
+            if (validInputs.contains(output)) {gotValidInput = true;}
+            else {System.out.println("Please enter a lowercase letter between 'a' and 'h'");}
+        }
+        return validInputs.indexOf(output) + 1;
+    }
+
+    private int getRowFromUser() {
+        System.out.println("Please enter the row of the piece (an integer between 1 and 8): ");
+        boolean gotValidInput = false;
+        ArrayList<String> validInputs = new ArrayList<>(List.of("1", "2", "3", "4", "5", "6", "7", "8"));
+        String output = "";
+        while (!gotValidInput) {
+            output = scanner.nextLine();
+            if (validInputs.contains(output)) {gotValidInput = true;}
+            else {System.out.println("Please enter an integer between 1 and 8");}
+        }
+        return Integer.parseInt(output);
     }
 
     private UserData getUserDataFromUser(String requestType) {
