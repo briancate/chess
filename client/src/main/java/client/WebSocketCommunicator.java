@@ -8,6 +8,7 @@ import jakarta.websocket.MessageHandler;
 import jakarta.websocket.Session;
 import jakarta.websocket.WebSocketContainer;
 import ui.Client;
+import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
@@ -27,17 +28,16 @@ public class WebSocketCommunicator extends Endpoint {
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
             // turn this into a ServerMessage and handle it from there
             public void onMessage(String message) {
-//                System.out.println(message);
                 ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
 
                 switch (serverMessage.getServerMessageType()) {
                     case ServerMessage.ServerMessageType.NOTIFICATION -> {
                         Notification notification = gson.fromJson(message, Notification.class);
                         client.displayNotification(notification);
-                        // send it back to the Client (at least the message)
                     }
                     case ServerMessage.ServerMessageType.LOAD_GAME -> {
-                        // cry in a corner for the moment
+                        LoadGame loadGame = gson.fromJson(message, LoadGame.class);
+                        client.displayLoadGame(loadGame);
                     }
                 }
             }

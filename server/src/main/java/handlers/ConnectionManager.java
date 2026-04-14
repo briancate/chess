@@ -37,4 +37,14 @@ public class ConnectionManager {
             }
         }
     }
+
+    public void notifySingleSession(Session session, int gameID, String message) throws Exception {
+        for (Session c : connections.get(gameID)) {
+            if (c.isOpen()) {
+                if (c.equals(session)) {
+                    c.getRemote().sendString(message);
+                }
+            }
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package client;
 
+import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 
 public interface ServerMessageObserver {
@@ -8,5 +9,5 @@ public interface ServerMessageObserver {
 
 //    void displayError();
 
-//    void displayLoadGame();
+    void displayLoadGame(LoadGame loadGame);
 }

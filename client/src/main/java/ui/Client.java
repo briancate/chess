@@ -8,6 +8,7 @@ import client.ServerFacade;
 import model.*;
 import websocket.commands.ConnectCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
@@ -36,7 +37,13 @@ public class Client implements ServerMessageObserver {
     // have a method notify with a switch statement for notifications, errors, and load game
 
     public void displayNotification(Notification notification) {
-        System.out.println(notification.getMessage());
+        System.out.println("\n" + notification.getMessage() + "\n");
+    }
+
+    public void displayLoadGame(LoadGame loadGame) {
+        System.out.println();
+        ui.ChessBoard.drawChessBoard(loadGame.getTeamColor(), loadGame.getGame().getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
+        System.out.println();
     }
 
     public void run() {
@@ -272,12 +279,6 @@ public class Client implements ServerMessageObserver {
         // then call the server's /ws endpoint
         // send a connect ws message
         // transition to gameplay UI
-
-        // EVENTUALLY THIS WILL NEED TO ACTUALLY GET THE CHESSGAME OBJECT FROM THE DATABASE
-        System.out.println();
-        if (teamToJoin.equals("WHITE")) {ChessBoard.drawChessBoard("WHITE", new chess.ChessBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);}
-        else {ChessBoard.drawChessBoard("BLACK", new chess.ChessBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);}
-        System.out.println();
     }
 
     private void observeGame() {
@@ -296,14 +297,6 @@ public class Client implements ServerMessageObserver {
         int gameID = games.games().get(number - 1).gameID();
 
         connectWSToServer(gameID, "an observer");
-
-        // draw out the initial state of the board
-        // eventually I'll need to get the ChessGame from the database, not just use a blank one
-        // also, the game being printed out should result from receiving a LoadGame message from the server
-        System.out.println();
-        chess.ChessGame game = new ChessGame();
-        ChessBoard.drawChessBoard("WHITE", game.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
-        System.out.println();
 
         // then call the server's /ws endpoint
         // send a connect ws message
