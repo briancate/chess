@@ -1,19 +1,21 @@
 package ui;
 
 import chess.ChessGame;
+import client.ServerMessageObserver;
 import com.google.gson.Gson;
 import model.JoinResult;
 import client.ServerFacade;
 import model.*;
 import websocket.commands.ConnectCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.Notification;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Client {
+public class Client implements ServerMessageObserver {
 
     private final ServerFacade serverFacade;
     private String authToken;
@@ -22,7 +24,7 @@ public class Client {
 
 
     public Client(int port) {
-        serverFacade = new ServerFacade(port);
+        serverFacade = new ServerFacade(port, this);
     }
 
     static void main() {
@@ -32,6 +34,10 @@ public class Client {
 
     // Client will eventually need to implement ServerMessageObserver
     // have a method notify with a switch statement for notifications, errors, and load game
+
+    public void displayNotification(Notification notification) {
+        System.out.println(notification.getMessage());
+    }
 
     public void run() {
         System.out.print(SET_TEXT_COLOR_WHITE);

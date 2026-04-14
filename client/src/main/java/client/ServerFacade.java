@@ -2,18 +2,19 @@ package client;
 
 import model.JoinResult;
 import model.*;
+import ui.Client;
 
 public class ServerFacade {
 
     private final ClientCommunicator clientCommunicator;
     private final WebSocketCommunicator webSocketCommunicator;
 
-    public ServerFacade(int port) {
+    public ServerFacade(int port, Client client) {
         // should this accept a url?
         // if it does, the url should have the root and port but not the last part
         clientCommunicator = new ClientCommunicator("localhost:" + port);
         try {
-            webSocketCommunicator = new WebSocketCommunicator("localhost:" + port);
+            webSocketCommunicator = new WebSocketCommunicator("localhost:" + port, client);
         } catch (Exception e) {
             throw new RuntimeException("Unable to establish the WebSocket Connection: " + e.getMessage() + e.getClass());
         }
