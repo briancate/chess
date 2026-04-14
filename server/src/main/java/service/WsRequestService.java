@@ -31,9 +31,7 @@ public class WsRequestService {
         String teamColor;
         if (command.getTeamColor() == null) {teamColor = "an observer";}
         else {teamColor = command.getTeamColor();}
-//        String ending = command.getTeamColor() == null ? "" : command.getTeamColor().toLowerCase();
         String message = username + " joined the game as " + teamColor;
-
         // maybe check the DAO to see if the username shows up?
         Notification notification = new Notification(message);
         String serializedNotification = gson.toJson(notification);
@@ -41,7 +39,6 @@ public class WsRequestService {
             connectionManager.broadcast(session, command.getGameID(), serializedNotification);
         }
         catch (Exception e) {
-            // Eventually change this to a ServerMessage.Error message
             ServerMessageError error = new ServerMessageError(e.getMessage());
             connectionManager.notifySingleSession(session, command.getGameID(), gson.toJson(error));
         }
@@ -49,9 +46,7 @@ public class WsRequestService {
 
     public void loadGame(Session session, int gameID) throws Exception {
         try {
-            // potentially return String teamColor if that broke things
             ChessGame game = sqlWsDAO.getGame(gameID).game();
-//            if (teamColor.equals("an observer")) {teamColor = "WHITE";}
             LoadGame loadGame = new LoadGame(game);
             // Add a second try / catch block here?
             connectionManager.notifySingleSession(session, gameID, gson.toJson(loadGame));
@@ -76,10 +71,38 @@ public class WsRequestService {
         }
     }
 
+    public void resign(Session session, String username, int gameID) throws Exception {
+        try {
+            GameData gameData = sqlWsDAO.getGame(gameID);
+            ChessGame game = gameData.game();
+
+            if (game.getIsFinished()) {
+                ServerMessageError error = new ServerMessageError("Unable to resign once the game is over");
+                connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
+                return;
+            }
+
+            markGameAsFinished(gameID, game);
+            Notification notification = new Notification(username + " has resigned!");
+            connectionManager.broadcast(null, gameID, gson.toJson(notification));
+        }
+        catch (Exception ex) {
+            ServerMessageError error = new ServerMessageError(ex.getMessage());
+            connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
+        }
+    }
+
     public void makeMove(Session session, String username, int gameID, ChessMove move) throws Exception {
         try {
             GameData gameData = sqlWsDAO.getGame(gameID);
             ChessGame game = gameData.game();
+
+            if (game.getIsFinished()) {
+                ServerMessageError error = new ServerMessageError("Unable to make moves once game is over");
+                connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
+                return;
+            }
+
             game.makeMove(move);
 
             // send everyone the updated game
@@ -98,13 +121,13 @@ public class WsRequestService {
             if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
                 Notification notification1 = new Notification(gameData.whiteUsername() + " is in checkmate!");
                 connectionManager.broadcast(null, gameID, gson.toJson(notification1));
-                // REMEMBER TO MARK GAME AS DONE
+                markGameAsFinished(gameID, game);
                 return;
             }
             else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
                 Notification notification1 = new Notification(gameData.blackUsername() + " is in checkmate!");
                 connectionManager.broadcast(null, gameID, gson.toJson(notification1));
-                // REMEMBER TO MARK GAME AS DONE
+                markGameAsFinished(gameID, game);
                 return;
             }
             if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
@@ -118,12 +141,12 @@ public class WsRequestService {
             if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
                 Notification notification1 = new Notification(gameData.whiteUsername() + " is in stalemate!");
                 connectionManager.broadcast(null, gameID, gson.toJson(notification1));
-                // REMEMBER TO MARK GAME AS DONE
+                markGameAsFinished(gameID, game);
             }
             else if (game.isInStalemate(ChessGame.TeamColor.BLACK)) {
                 Notification notification1 = new Notification(gameData.blackUsername() + " is in stalemate!");
                 connectionManager.broadcast(null, gameID, gson.toJson(notification1));
-                // REMEMBER TO MARK GAME AS DONE
+                markGameAsFinished(gameID, game);
             }
         }
         catch (Exception ex) {
@@ -131,6 +154,11 @@ public class WsRequestService {
             System.out.println(ex.getMessage());
             connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
         }
+    }
+
+    public void markGameAsFinished(int gameID, ChessGame game) throws Exception {
+        game.setIsFinished(true);
+        sqlWsDAO.updateGame(gameID, game);
     }
 
 }

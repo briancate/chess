@@ -150,11 +150,18 @@ public class Client implements ServerMessageObserver {
                 case "4" -> help(true);
                 case "5" -> {
                     if (!isPlayer) {System.out.println("Unable to resign as an observer");}
-                    else {System.out.println("This should resign the game");}
+                    else {
+                        System.out.println("This should resign the game");
+                        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+                        try {
+                            serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
+                        }
+                        catch (Exception e) {
+                            System.out.println("Error: " +  e.getMessage());
+                        }
+                    }
                 }
                 case "6" -> {
-                    if (isPlayer) {System.out.println("This should call a WS endpoint to update the game stored in the DB");}
-                    System.out.println("This should leave the game");
                     UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
                     try {
                         serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
@@ -162,7 +169,6 @@ public class Client implements ServerMessageObserver {
                     catch (Exception e) {
                         System.out.println("Error: " +  e.getMessage());
                     }
-
                 }
                 default -> System.out.println("Your selection must be a number between 1 and 6");
             }

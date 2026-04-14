@@ -43,12 +43,10 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
             UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
             gameID = command.getGameID();
             String username;
-            // THIS IS WHERE IT CRASHES IF YOU HAVE A BAD AUTHTOKEN
             try {
                 username = (authHandler.getAuth(command.getAuthToken())).username();
             }
             catch (DataAccessException e) {
-//                connectionManager.add(gameID, session);
                 ServerMessageError error = new ServerMessageError(e.getMessage());
                 connectionManager.notifySingleSession(session, command.getGameID(), gson.toJson(error));
                 return;
@@ -63,7 +61,6 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                 return;
             }
 
-            // replace these with actual method calls to the Service (once I implement those lol)
             switch (command.getCommandType()) {
                 case CONNECT -> {
                     ConnectCommand newCommand = gson.fromJson(ctx.message(), ConnectCommand.class);
@@ -76,11 +73,12 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                     wsService.makeMove(session, username, gameID, newCommand.getMove());
                 }
                 case LEAVE -> {
-                    System.out.println("Leaving");
                     wsService.leaveGame(session, username, gameID);
                     connectionManager.remove(gameID, session);
                 }
-                case RESIGN -> System.out.println("Resigning");
+                case RESIGN -> {
+                    wsService.resign(session, username, gameID);
+                }
             }
         }
         catch (Exception e) {
@@ -90,7 +88,8 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
 //            gameID = command.getGameID();
 //            ServerMessageError error = new ServerMessageError(e.getMessage());
 //            connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
-            throw new RuntimeException("The WSRequest handler crashed somehow: " + e.getMessage() + e.getClass());
+//            throw new RuntimeException("The WSRequest handler crashed somehow: " + e.getMessage() + e.getClass());
+            System.out.println("Error: somehow the server failed to send a ServerErrorMessage");
         }
     }
 

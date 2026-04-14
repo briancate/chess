@@ -16,6 +16,7 @@ public class ChessGame {
     private TeamColor teamTurn = TeamColor.WHITE;
     private ChessPosition whiteKingLocation = new ChessPosition(1, 5);
     private ChessPosition blackKingLocation = new ChessPosition(8, 5);
+    private boolean isFinished;
     // have some way of tracking moves for en passant?
     // and hold on to some boolean that says if the king or rooks have moved (for castling)?
     // private boolean canCastleKingside = true;
@@ -25,6 +26,15 @@ public class ChessGame {
     public ChessGame() {
         // I need to initialize the board somewhere, does this work?
         board.resetBoard();
+        this.isFinished = false;
+    }
+
+    public void setIsFinished(boolean isFinished) {
+        this.isFinished = isFinished;
+    }
+
+    public boolean getIsFinished() {
+        return this.isFinished;
     }
 
     /**
