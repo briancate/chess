@@ -12,6 +12,8 @@ import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessageError;
 
+import java.util.Objects;
+
 
 public class WsRequestService {
 
@@ -76,6 +78,14 @@ public class WsRequestService {
             GameData gameData = sqlWsDAO.getGame(gameID);
             ChessGame game = gameData.game();
 
+            // if an observer tries to resign, send an error and fail
+            if (!Objects.equals(username, gameData.whiteUsername()) && !Objects.equals(username, gameData.blackUsername())) {
+                ServerMessageError error = new ServerMessageError("Unable to resign as an observer");
+                connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
+                return;
+            }
+
+            // if someone tries to resign after the game is already over, send an error and fail
             if (game.getIsFinished()) {
                 ServerMessageError error = new ServerMessageError("Unable to resign once the game is over");
                 connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
@@ -97,8 +107,24 @@ public class WsRequestService {
             GameData gameData = sqlWsDAO.getGame(gameID);
             ChessGame game = gameData.game();
 
+            // if an observer tries to make a move, send an error and fail
+            if (!Objects.equals(username, gameData.whiteUsername()) && !Objects.equals(username, gameData.blackUsername())) {
+                ServerMessageError error = new ServerMessageError("Unable to make moves as an observer");
+                connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
+                return;
+            }
+
+            // if the game is done, don't allow moves
             if (game.getIsFinished()) {
                 ServerMessageError error = new ServerMessageError("Unable to make moves once game is over");
+                connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
+                return;
+            }
+
+            // if someone tries to move for their opponent, send an error and fail
+            if ((game.getTeamTurn() == ChessGame.TeamColor.WHITE && gameData.blackUsername().equals(username))
+                    || (game.getTeamTurn() == ChessGame.TeamColor.BLACK && gameData.whiteUsername().equals(username))) {
+                ServerMessageError error = new ServerMessageError("Unable to make moves for your opponent");
                 connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
                 return;
             }

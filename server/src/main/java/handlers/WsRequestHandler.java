@@ -43,6 +43,8 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
             UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
             gameID = command.getGameID();
             String username;
+
+            // try to get the username, send an error message and fail if authToken isn't valid
             try {
                 username = (authHandler.getAuth(command.getAuthToken())).username();
             }
@@ -52,6 +54,7 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                 return;
             }
 
+            // test the DAO to see if the gameID is valid
             try {
                 wsService.getSqlWsDAO().getGame(gameID);
             }
@@ -76,19 +79,10 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                     wsService.leaveGame(session, username, gameID);
                     connectionManager.remove(gameID, session);
                 }
-                case RESIGN -> {
-                    wsService.resign(session, username, gameID);
-                }
+                case RESIGN -> wsService.resign(session, username, gameID);
             }
         }
         catch (Exception e) {
-            // REMEMBER TO UPDATE THIS
-            // DON'T SWALLOW EXCEPTIONS
-//            UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
-//            gameID = command.getGameID();
-//            ServerMessageError error = new ServerMessageError(e.getMessage());
-//            connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
-//            throw new RuntimeException("The WSRequest handler crashed somehow: " + e.getMessage() + e.getClass());
             System.out.println("Error: somehow the server failed to send a ServerErrorMessage");
         }
     }
