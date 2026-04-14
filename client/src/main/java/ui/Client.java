@@ -1,6 +1,8 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import client.ServerMessageObserver;
 import com.google.gson.Gson;
@@ -110,10 +112,27 @@ public class Client implements ServerMessageObserver {
                 case "1" -> ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
                 case "2" -> {
                     if (!isPlayer) {System.out.println("Unable to make moves as an observer");}
-                    else {System.out.println("This should make a move");}
+                    else {
+                        ChessMove move = getChessMoveFromUser();
+                        System.out.println("This is the move from the user:");
+                        System.out.print(move + "\n");
+
+                        Collection<ChessMove> validMoves = currentGame.validMoves(move.getStartPosition());
+
+                        System.out.println("These are the valid moves");
+                        for (ChessMove move2 : validMoves) {
+                            System.out.println("User promotion: " + move.getPromotionPiece());
+                            System.out.println("Valid promotion: " + move2.getPromotionPiece());
+                        }
+
+                        if (!validMoves.contains(move)) {System.out.println("Invalid move.");}
+                        else {
+                            System.out.println("This should make the move");
+                        } // call the ws endpoint
+                    }
                 }
                 case "3" -> {
-                    ChessPosition position = getChessPositionFromUser();
+                    ChessPosition position = getChessPositionFromUser("Please enter the position of the piece you wish to highlight:");
                     Collection<ChessPosition> positions = currentGame.findEndPositionsFromPiecePosition(position);
                     boolean [][] booleanBoard = ui.ChessBoard.generateFilledBooleanBoardFromPositions(positions);
                     ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), booleanBoard);
@@ -325,6 +344,19 @@ public class Client implements ServerMessageObserver {
         }
     }
 
+    private void resolveLoginAttempt(RegisterResponse response) {
+        if (response.message() != null) {
+            // find a way to give more information here
+            System.out.println("The login request failed: " + response.message() + "\n");
+        }
+        else {
+            authToken = response.authToken();
+            System.out.println("Successfully logged in as " + response.username() + "!\n");
+        }
+
+        if (authToken != null) {postLoginREPL();}
+    }
+
     private String getTeam() {
         System.out.println("Please enter the team you wish to join:");
 
@@ -346,22 +378,63 @@ public class Client implements ServerMessageObserver {
         while (!gotValidInput) {
             if (gameNumber != -1) {System.out.print("Invalid number, please enter the number of one of the games listed. ");}
             else {System.out.print("Please enter the number of the game you wish to join: ");}
-
             try {
                 gameNumber = Integer.parseInt(scanner.nextLine());
             }
             catch (Exception ex) {
                 continue;
             }
-
             if (validNumbers.contains(gameNumber)) {gotValidInput = true;}
         }
         return gameNumber;
     }
 
-    private ChessPosition getChessPositionFromUser() {
-//        System.out.println("Please enter the coordinates for the piece you wish to highlight");
-//        System.out.println("Use the format <column><row>. For example, e2");
+    private ChessMove getChessMoveFromUser() {
+        ChessPosition startPosition = getChessPositionFromUser("Please enter the starting position of the piece:");
+        ChessPosition endPosition = getChessPositionFromUser("Please enter the ending position of the piece:");
+        ChessPiece piece = currentGame.getBoard().getPiece(startPosition);
+        ChessPiece.PieceType type = getPieceType(piece, endPosition);
+        return new ChessMove(startPosition, endPosition, type);
+    }
+
+    private ChessPiece.PieceType getPieceType(ChessPiece piece, ChessPosition endPosition) {
+        ChessPiece.PieceType type = piece.getPieceType();
+        if (type == ChessPiece.PieceType.PAWN) {
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endPosition.getRow() == 8) {
+                type = getPromotionPieceFromUser();
+            }
+            else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getColumn() == 1) {
+                type = getPromotionPieceFromUser();
+            }
+            else {type = null;}
+        }
+        else {type = null;}
+        return type;
+    }
+
+    private ChessPiece.PieceType getPromotionPieceFromUser() {
+        System.out.println("Please enter which piece you wish to promote your pawn to!");
+        System.out.println("r = rook, n = knight, b = bishop, and q = queen");
+        ArrayList<String> validInputs = new ArrayList<>(List.of("r", "n", "b", "q"));
+        boolean gotValidInput = false;
+        String output = "";
+        while (!gotValidInput) {
+            output = scanner.nextLine();
+            if (validInputs.contains(output)) {gotValidInput = true;}
+            else {System.out.println("Please enter 'r', 'n', 'b', or 'q'");}
+        }
+        switch (output) {
+            case "r" -> {return ChessPiece.PieceType.ROOK;}
+            case "n" -> {return ChessPiece.PieceType.KNIGHT;}
+            case "b" -> {return ChessPiece.PieceType.BISHOP;}
+            case "q" -> {return ChessPiece.PieceType.QUEEN;}
+            default -> throw new RuntimeException("Why would you do this to me?");
+        }
+    }
+
+    private ChessPosition getChessPositionFromUser(String prompt) { //
+//        System.out.println("Please enter the position of the piece using the column letter and row number (ex e 4)");
+        System.out.println(prompt);
         int col = getColFromUser();
         int row = getRowFromUser();
         return new ChessPosition(row, col);
@@ -404,19 +477,6 @@ public class Client implements ServerMessageObserver {
         else {email = null;}
 
         return new UserData(username, password, email);
-    }
-
-    private void resolveLoginAttempt(RegisterResponse response) {
-        if (response.message() != null) {
-            // find a way to give more information here
-            System.out.println("The login request failed: " + response.message() + "\n");
-        }
-        else {
-            authToken = response.authToken();
-            System.out.println("Successfully logged in as " + response.username() + "!\n");
-        }
-
-        if (authToken != null) {postLoginREPL();}
     }
 
     private String getNonEmptyString(String prompt) {

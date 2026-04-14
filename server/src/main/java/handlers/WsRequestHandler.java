@@ -36,7 +36,7 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleMessage(@NotNull WsMessageContext ctx) {
-        int gameId = -1;
+        int gameId;
         Session session = ctx.session;
 
         try {
@@ -50,8 +50,6 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                     ConnectCommand newCommand = gson.fromJson(ctx.message(), ConnectCommand.class);
                     connectionManager.add(gameId, session);
                     wsService.connect(session, username, newCommand);
-
-//                    System.out.println("About to call loadGame");
                     wsService.loadGame(session, newCommand.getTeamColor(), gameId);
                     System.out.println("Connecting for real this time lol");
                 }
