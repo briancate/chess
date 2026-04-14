@@ -12,10 +12,8 @@ import service.WsRequestService;
 import websocket.commands.ConnectCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
-
-//import jakarta.websocket.Session;
 import org.eclipse.jetty.websocket.api.Session;
-
+import websocket.messages.ServerMessageError;
 
 
 public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -37,31 +35,31 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleMessage(@NotNull WsMessageContext ctx) {
-        int gameId;
+        int gameID;
         Session session = ctx.session;
 
         try {
             UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
-            gameId = command.getGameID();
+            gameID = command.getGameID();
             String username = (authHandler.getAuth(command.getAuthToken())).username();
 
             // replace these with actual method calls to the Service (once I implement those lol)
             switch (command.getCommandType()) {
                 case CONNECT -> {
                     ConnectCommand newCommand = gson.fromJson(ctx.message(), ConnectCommand.class);
-                    connectionManager.add(gameId, session);
+                    connectionManager.add(gameID, session);
                     wsService.connect(session, username, newCommand);
-                    wsService.loadGame(session, newCommand.getTeamColor(), gameId);
+                    wsService.loadGame(session, newCommand.getTeamColor(), gameID);
                     System.out.println("Connecting for real this time lol");
                 }
                 case MAKE_MOVE -> {
                     System.out.println("Making a move");
                     MakeMoveCommand newCommand = gson.fromJson(ctx.message(), MakeMoveCommand.class);
-                    wsService.makeMove(session, username, gameId, newCommand.getMove(), newCommand.getTeamColor());
+                    wsService.makeMove(session, username, gameID, newCommand.getMove(), newCommand.getTeamColor());
                 }
                 case LEAVE -> {
                     System.out.println("Leaving");
-                    connectionManager.remove(gameId, session);
+                    connectionManager.remove(gameID, session);
                 }
                 case RESIGN -> {
                     System.out.println("Resigning");
@@ -72,13 +70,17 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
         catch (Exception e) {
             // REMEMBER TO UPDATE THIS
             // DON'T SWALLOW EXCEPTIONS
+
+//            UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
+//            gameID = command.getGameID();
+//            ServerMessageError error = new ServerMessageError(e.getMessage());
+//            connectionManager.notifySingleSession(session, gameID, gson.toJson(error));
             throw new RuntimeException("The WSRequest handler crashed somehow: " + e.getMessage() + e.getClass());
         }
     }
 
     @Override
     public void handleClose(@NotNull WsCloseContext ctx) {
-        // somehow remove the session from the connectionManager?
         System.out.println("Websocket closed");
     }
 }

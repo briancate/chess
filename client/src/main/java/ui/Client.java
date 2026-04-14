@@ -14,7 +14,9 @@ import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
+import websocket.messages.ServerMessageError;
 
+import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 import static ui.EscapeSequences.SET_TEXT_COLOR_WHITE;
 
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ public class Client implements ServerMessageObserver {
     private final Scanner scanner = new Scanner(System.in);
     private final Gson gson = new Gson();
     private ChessGame currentGame;
+    private String teamColor;
 
 
     public Client(int port) {
@@ -44,14 +47,21 @@ public class Client implements ServerMessageObserver {
     // have a method notify with a switch statement for notifications, errors, and load game
 
     public void displayNotification(Notification notification) {
-        System.out.println("\n" + notification.getMessage() + "\n");
+        System.out.println(notification.getMessage() + "\n");
     }
 
     public void displayLoadGame(LoadGame loadGame) {
         currentGame = loadGame.getGame();
         System.out.println();
-        ui.ChessBoard.drawChessBoard(loadGame.getTeamColor(), loadGame.getGame().getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
+        ui.ChessBoard.drawChessBoard(teamColor, loadGame.getGame().getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
         System.out.println();
+        printMenu(true);
+    }
+
+    public void displayError(ServerMessageError error) {
+        System.out.print(SET_TEXT_COLOR_RED);
+        System.out.println(error.getMessage() + "\n");
+        System.out.print(SET_TEXT_COLOR_WHITE);
     }
 
     public void run() {
@@ -115,10 +125,15 @@ public class Client implements ServerMessageObserver {
                     if (!isPlayer) {System.out.println("Unable to make moves as an observer");}
                     else {
                         ChessMove move = getChessMoveFromUser();
+                        if (move == null) {
+                            System.out.println("Unable to make move because you do not have a piece at that location.");
+                            continue;
+                        }
 
                         Collection<ChessMove> validMoves = currentGame.validMoves(move.getStartPosition());
 
                         if (!validMoves.contains(move)) {System.out.println("Invalid move.");}
+                        // also check if it's the person's turn? Since validMoves doesn't care about that
                         else {
                             System.out.println("This should make the move");
                             MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move, teamColor);
@@ -128,7 +143,7 @@ public class Client implements ServerMessageObserver {
                             catch (Exception e) {
                                 System.out.println("Error: " +  e.getMessage());
                             }
-                        } // call the ws endpoint
+                        }
                     }
                 }
                 case "3" -> {
@@ -302,7 +317,9 @@ public class Client implements ServerMessageObserver {
 
         connectWSToServer(gameID, teamToJoin);
 
-        gameplayREPL(true, gameID, teamToJoin);
+
+        teamColor = teamToJoin;
+        gameplayREPL(true, gameID, teamColor);
 
         // all of that was just to call the server endpoint
         // then call the server's /ws endpoint
@@ -330,7 +347,8 @@ public class Client implements ServerMessageObserver {
         // then call the server's /ws endpoint
         // send a connect ws message
         // transition to gameplay UI
-        gameplayREPL(false, gameID, "WHITE");
+        teamColor = "WHITE";
+        gameplayREPL(false, gameID, teamColor);
     }
 
     private void connectWSToServer(int gameID, String teamColor) {
@@ -393,6 +411,7 @@ public class Client implements ServerMessageObserver {
         ChessPosition startPosition = getChessPositionFromUser("Please enter the starting position of the piece:");
         ChessPosition endPosition = getChessPositionFromUser("Please enter the ending position of the piece:");
         ChessPiece piece = currentGame.getBoard().getPiece(startPosition);
+        if (piece == null) {return null;}
         ChessPiece.PieceType type = getPieceType(piece, endPosition);
         return new ChessMove(startPosition, endPosition, type);
     }

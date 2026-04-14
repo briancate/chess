@@ -11,6 +11,7 @@ import ui.Client;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessageError;
 
 import java.net.URI;
 
@@ -26,10 +27,9 @@ public class WebSocketCommunicator extends Endpoint {
         this.session = container.connectToServer(this, uri);
 
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-            // turn this into a ServerMessage and handle it from there
             public void onMessage(String message) {
+                // turn the string into a ServerMessage and handle it from there
                 ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
-
                 switch (serverMessage.getServerMessageType()) {
                     case ServerMessage.ServerMessageType.NOTIFICATION -> {
                         Notification notification = gson.fromJson(message, Notification.class);
@@ -38,6 +38,10 @@ public class WebSocketCommunicator extends Endpoint {
                     case ServerMessage.ServerMessageType.LOAD_GAME -> {
                         LoadGame loadGame = gson.fromJson(message, LoadGame.class);
                         client.displayLoadGame(loadGame);
+                    }
+                    case ServerMessage.ServerMessageType.ERROR -> {
+                        ServerMessageError error = gson.fromJson(message, ServerMessageError.class);
+                        client.displayError(error);
                     }
                 }
             }

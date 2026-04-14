@@ -2,6 +2,7 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import model.GameData;
 import server.ResponseException;
 
 import java.sql.Connection;
@@ -13,8 +14,8 @@ public class SQLWsDAO {
 
     private final Gson gson = new Gson();
 
-    public ChessGame getGame(int gameID) throws DataAccessException, ResponseException {
-        var statement = "SELECT chessgame from games WHERE gameid = ?";
+    public GameData getGame(int gameID) throws DataAccessException, ResponseException {
+        var statement = "SELECT * from games WHERE gameid = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
@@ -29,8 +30,13 @@ public class SQLWsDAO {
         throw new DataAccessException("Error: no gameData with given gameID");
     }
 
-    private ChessGame readGame(ResultSet rs) throws SQLException {
-        return gson.fromJson(rs.getString("chessgame"), ChessGame.class);
+    private GameData readGame(ResultSet rs) throws SQLException {
+        int gameID = rs.getInt("gameid");
+        String whiteUsername = rs.getString("whiteusername");
+        String blackUsername = rs.getString("blackusername");
+        String gameName = rs.getString("gamename");
+        ChessGame chessGame = gson.fromJson(rs.getString("chessgame"), ChessGame.class);
+        return new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
     }
 
     public void updateGame(int gameID, ChessGame game) throws Exception {
