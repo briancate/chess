@@ -10,6 +10,7 @@ import io.javalin.websocket.WsMessageHandler;
 import org.jetbrains.annotations.NotNull;
 import service.WsRequestService;
 import websocket.commands.ConnectCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
 //import jakarta.websocket.Session;
@@ -53,7 +54,11 @@ public class WsRequestHandler implements WsConnectHandler, WsMessageHandler, WsC
                     wsService.loadGame(session, newCommand.getTeamColor(), gameId);
                     System.out.println("Connecting for real this time lol");
                 }
-                case MAKE_MOVE -> System.out.println("Making a move");
+                case MAKE_MOVE -> {
+                    System.out.println("Making a move");
+                    MakeMoveCommand newCommand = gson.fromJson(ctx.message(), MakeMoveCommand.class);
+                    wsService.makeMove(session, username, gameId, newCommand.getMove(), newCommand.getTeamColor());
+                }
                 case LEAVE -> {
                     System.out.println("Leaving");
                     connectionManager.remove(gameId, session);

@@ -32,4 +32,17 @@ public class SQLWsDAO {
     private ChessGame readGame(ResultSet rs) throws SQLException {
         return gson.fromJson(rs.getString("chessgame"), ChessGame.class);
     }
+
+    public void updateGame(int gameID, ChessGame game) throws Exception {
+        var statement = "UPDATE games SET chessgame = ? WHERE gameid = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, gson.toJson(game));
+                ps.setInt(2, gameID);
+                ps.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException("Error: Unable to update database");
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import dataaccess.SQLWsDAO;
 import handlers.ConnectionManager;
@@ -44,6 +45,30 @@ public class WsRequestService {
         }
         catch (Exception ex) {
             // Eventually change this to a ServerMessage.Error message
+            throw new Exception("Error: " + ex.getMessage());
+        }
+    }
+
+    public void makeMove(Session session, String username, int gameID, ChessMove move, String teamColor) throws Exception {
+        try {
+            ChessGame game = sqlWsDAO.getGame(gameID);
+            game.makeMove(move);
+
+            // send everyone the updated game
+            LoadGame loadGame = new LoadGame(game, teamColor);
+            String serializedLoadGame = gson.toJson(loadGame);
+            connectionManager.broadcast(null, gameID, serializedLoadGame);
+
+            // save the game back to the database
+            sqlWsDAO.updateGame(gameID, game);
+
+            // notify everyone of the move
+            String message = username + " made the move " + move;
+            Notification notification = new Notification(message);
+            String serializedNotification = gson.toJson(notification);
+            connectionManager.broadcast(session, gameID, serializedNotification);
+        }
+        catch (Exception ex) {
             throw new Exception("Error: " + ex.getMessage());
         }
     }

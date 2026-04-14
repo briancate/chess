@@ -10,6 +10,7 @@ import model.JoinResult;
 import client.ServerFacade;
 import model.*;
 import websocket.commands.ConnectCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
@@ -99,7 +100,7 @@ public class Client implements ServerMessageObserver {
         }
     }
 
-    public void gameplayREPL(boolean isPlayer, String teamColor) {
+    public void gameplayREPL(boolean isPlayer, int gameID, String teamColor) {
         // do a load game request to get the board
         String input = "again, doesn't matter";
         while (!input.equals("6")) {
@@ -114,20 +115,19 @@ public class Client implements ServerMessageObserver {
                     if (!isPlayer) {System.out.println("Unable to make moves as an observer");}
                     else {
                         ChessMove move = getChessMoveFromUser();
-                        System.out.println("This is the move from the user:");
-                        System.out.print(move + "\n");
 
                         Collection<ChessMove> validMoves = currentGame.validMoves(move.getStartPosition());
-
-                        System.out.println("These are the valid moves");
-                        for (ChessMove move2 : validMoves) {
-                            System.out.println("User promotion: " + move.getPromotionPiece());
-                            System.out.println("Valid promotion: " + move2.getPromotionPiece());
-                        }
 
                         if (!validMoves.contains(move)) {System.out.println("Invalid move.");}
                         else {
                             System.out.println("This should make the move");
+                            MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move, teamColor);
+                            try {
+                                serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
+                            }
+                            catch (Exception e) {
+                                System.out.println("Error: " +  e.getMessage());
+                            }
                         } // call the ws endpoint
                     }
                 }
@@ -302,7 +302,7 @@ public class Client implements ServerMessageObserver {
 
         connectWSToServer(gameID, teamToJoin);
 
-        gameplayREPL(true, teamToJoin);
+        gameplayREPL(true, gameID, teamToJoin);
 
         // all of that was just to call the server endpoint
         // then call the server's /ws endpoint
@@ -330,7 +330,7 @@ public class Client implements ServerMessageObserver {
         // then call the server's /ws endpoint
         // send a connect ws message
         // transition to gameplay UI
-        gameplayREPL(false, "WHITE");
+        gameplayREPL(false, gameID, "WHITE");
     }
 
     private void connectWSToServer(int gameID, String teamColor) {
