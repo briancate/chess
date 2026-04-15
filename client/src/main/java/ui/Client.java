@@ -113,65 +113,71 @@ public class Client implements ServerMessageObserver {
             System.out.println();
 
             switch (input) {
-                case "1" ->
-                        ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
-                case "2" -> {
-                    if (!isPlayer) {
-                        System.out.println("Unable to make moves as an observer");
-                    } else {
-                        ChessMove move = getChessMoveFromUser();
-                        if (move == null) {
-                            System.out.println("Unable to make move because you do not have a piece at that location.");
-                            continue;
-                        }
-
-                        Collection<ChessMove> validMoves = currentGame.validMoves(move.getStartPosition());
-
-                        if (!validMoves.contains(move)) {
-                            System.out.println("Invalid move.");
-                        }
-                        // also check if it's the person's turn? Since validMoves doesn't care about that
-                        else {
-                            MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move, teamColor);
-                            try {
-                                serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
-                            } catch (Exception e) {
-                                System.out.println("Error: " + e.getMessage());
-                            }
-                        }
-                    }
-                }
-                case "3" -> {
-                    ChessPosition position = getChessPositionFromUser("Please enter the position of the piece you wish to highlight:");
-                    Collection<ChessPosition> positions = currentGame.findEndPositionsFromPiecePosition(position);
-                    boolean[][] booleanBoard = ui.ChessBoard.generateFilledBooleanBoardFromPositions(positions);
-                    ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), booleanBoard);
-                }
+                case "1" -> ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), ChessBoard.EMPTY_BOOLEAN_BOARD);
+                case "2" -> makeMove(isPlayer, gameID);
+                case "3" -> highlight();
                 case "4" -> help(true);
-                case "5" -> {
-                    if (!isPlayer) {
-                        System.out.println("Unable to resign as an observer");
-                    } else {
-                        System.out.println("This should resign the game");
-                        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
-                        try {
-                            serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
-                        } catch (Exception e) {
-                            System.out.println("Error: " + e.getMessage());
-                        }
-                    }
-                }
-                case "6" -> {
-                    UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
-                    try {
-                        serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
-                    } catch (Exception e) {
-                        System.out.println("Error: " + e.getMessage());
-                    }
-                }
+                case "5" -> resign(isPlayer, gameID);
+                case "6" -> leave(gameID);
                 default -> System.out.println("Your selection must be a number between 1 and 6");
             }
         }
+    }
+
+    public void makeMove(boolean isPlayer, int gameID) {
+        if (!isPlayer) {
+            System.out.println("Unable to make moves as an observer");
+        } else {
+            ChessMove move = getChessMoveFromUser();
+            if (move == null) {
+                System.out.println("Unable to make move because you do not have a piece at that location.");
+                return;
+            }
+            Collection<ChessMove> validMoves = currentGame.validMoves(move.getStartPosition());
+
+            if (!validMoves.contains(move)) {
+                System.out.println("Invalid move.");
+            }
+            // also check if it's the person's turn? Since validMoves doesn't care about that
+            else {
+                MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move, teamColor);
+                try {
+                    serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    public void resign(boolean isPlayer, int gameID) {
+        if (!isPlayer) {
+            System.out.println("Unable to resign as an observer");
+        } else {
+            System.out.println("This should resign the game");
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            try {
+                serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+    }
+
+    public void leave(int gameID) {
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+        try {
+            serverFacade.getWebSocketCommunicator().send(gson.toJson(command));
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    public void highlight() {
+        ChessPosition position = getChessPositionFromUser("Please enter the position of the piece you wish to highlight:");
+        Collection<ChessPosition> positions = currentGame.findEndPositionsFromPiecePosition(position);
+        boolean[][] booleanBoard = ui.ChessBoard.generateFilledBooleanBoardFromPositions(positions);
+        ui.ChessBoard.drawChessBoard(teamColor, currentGame.getBoard(), booleanBoard);
     }
 
     public void help(boolean gameplayUI) {
@@ -230,27 +236,24 @@ public class Client implements ServerMessageObserver {
         }
     }
 
+
+
     private void register() {
         System.out.println("To register, please fill out the following fields:");
-
         UserData userData = getUserDataFromUser("REGISTER");
         RegisterResponse response = serverFacade.register(userData);
-
         resolveLoginAttempt(response);
     }
 
     private void login() {
         System.out.println("To login, please enter your username and password:");
-
         UserData userData = getUserDataFromUser("LOGIN");
         RegisterResponse response = serverFacade.login(userData);
-
         resolveLoginAttempt(response);
     }
 
     private void logout() {
         LogoutResponse response = serverFacade.logout(authToken);
-
         if (response == null) {System.out.println("Successfully logged out\n");}
         else {System.out.println("Logout request failed: " + response.message() + "\n");}
     }
@@ -295,7 +298,6 @@ public class Client implements ServerMessageObserver {
             System.out.println("Unable to join a game as no games have been created.");
             return;
         }
-
         ArrayList<Integer> validGameNumbers = new ArrayList<>();
         for (int i = 0; i < games.games().size(); i++) {validGameNumbers.add(i + 1);}
 
@@ -312,7 +314,6 @@ public class Client implements ServerMessageObserver {
         }
 
         connectWSToServer(gameID, teamToJoin);
-
         teamColor = teamToJoin;
         gameplayREPL(true, gameID, teamColor);
     }
@@ -323,7 +324,6 @@ public class Client implements ServerMessageObserver {
             System.out.println("Unable to observe a game as no game have been created.");
             return;
         }
-
         ArrayList<Integer> validGameNumbers = new ArrayList<>();
         for (int i = 0; i < games.games().size(); i++) {validGameNumbers.add(i + 1);}
 
@@ -331,7 +331,6 @@ public class Client implements ServerMessageObserver {
         int gameID = games.games().get(number - 1).gameID();
 
         connectWSToServer(gameID, "an observer");
-
         teamColor = "WHITE";
         gameplayREPL(false, gameID, teamColor);
     }
